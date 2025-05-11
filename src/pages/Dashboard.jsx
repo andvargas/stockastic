@@ -1,6 +1,38 @@
-import React from 'react';
+import React, { useState } from "react";
+import TradeForm from "../components/TradeForm";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
+  const [trades, setTrades] = useState([
+    {
+      id: 1,
+      ticker: "AAPL",
+      type: "Long",
+      entryPrice: 150,
+      quantity: 10,
+      date: "2025-04-29",
+      stopLoss: 145,
+      takeProfit: 165,
+      status: "Open",
+    },
+    {
+      id: 2,
+      ticker: "TSLA",
+      type: "Short",
+      entryPrice: 720,
+      quantity: 5,
+      date: "2025-04-25",
+      stopLoss: 750,
+      takeProfit: 690,
+      status: "Closed",
+    },
+  ]);
+
+  const handleAddTrade = (newTrade) => {
+    const tradeWithId = { ...newTrade, id: Date.now() };
+    setTrades((prevTrades) => [...prevTrades, tradeWithId]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -22,58 +54,55 @@ const Dashboard = () => {
           </div>
         </div>
 
-{/* Trade List */}
-<div className="bg-white rounded-xl p-6 shadow">
-  <h2 className="text-xl font-bold mb-4">Trades</h2>
-  <table className="w-full text-left border-collapse">
-    <thead>
-      <tr>
-        <th className="border-b p-2">Ticker</th>
-        <th className="border-b p-2">Entry</th>
-        <th className="border-b p-2">Date</th>
-        <th className="border-b p-2">Stop Loss</th>
-        <th className="border-b p-2">Take Profit</th>
-        <th className="border-b p-2">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {/* Example Row */}
-      <tr>
-        <td className="border-b p-2">AAPL</td>
-        <td className="border-b p-2 flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium text-white bg-green-500">Long</span>
-          <span>10 @ £150</span>
-        </td>
-        <td className="border-b p-2">2025-04-29</td>
-        <td className="border-b p-2">£145</td>
-        <td className="border-b p-2">£165</td>
-        <td className="border-b p-2">
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium text-white bg-blue-500">Open</span>
-        </td>
-      </tr>
-
-      <tr>
-        <td className="border-b p-2">TSLA</td>
-        <td className="border-b p-2 flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium text-white bg-red-500">Short</span>
-          <span>5 @ £720</span>
-        </td>
-        <td className="border-b p-2">2025-04-25</td>
-        <td className="border-b p-2">£750</td>
-        <td className="border-b p-2">£690</td>
-        <td className="border-b p-2">
-          <span className="px-2 py-0.5 rounded-full text-xs font-medium text-white bg-gray-500">Closed</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+        {/* Trade List */}
+        <div className="bg-white rounded-xl p-6 shadow">
+          <h2 className="text-xl font-bold mb-4">Trades</h2>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="border-b p-2">Ticker</th>
+                <th className="border-b p-2">Entry</th>
+                <th className="border-b p-2">Date</th>
+                <th className="border-b p-2">Stop Loss</th>
+                <th className="border-b p-2">Take Profit</th>
+                <th className="border-b p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trades.map((trade) => (
+                <tr key={trade.id}>
+                  <td className="border-b p-2">
+                    <Link to={`/trade/${trade.id}`}>{trade.ticker}</Link>
+                  </td>
+                  <td className="border-b p-2 flex items-center gap-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.type === "Long" ? "bg-green-500" : "bg-red-500"}`}
+                    >
+                      {trade.type}
+                    </span>
+                    <span>
+                      {trade.quantity} @ £{trade.entryPrice}
+                    </span>
+                  </td>
+                  <td className="border-b p-2">{trade.date}</td>
+                  <td className="border-b p-2">£{trade.stopLoss}</td>
+                  <td className="border-b p-2">£{trade.takeProfit}</td>
+                  <td className="border-b p-2">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.status === "Open" ? "bg-blue-500" : "bg-gray-500"}`}
+                    >
+                      {trade.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Add Trade Button */}
-        <div className="text-center mt-8">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-            ➕ Add New Trade
-          </button>
+        <div className="mt-8">
+          <TradeForm onAddTrade={handleAddTrade} />
         </div>
       </div>
     </div>

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --shadow-light-xl: 4px 20px 25px -5px rgba(255, 255, 255, 0.2), 2px 15px 20px -6px rgba(255, 255, 255, 0.2);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -10,7 +14,7 @@
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-  background-image: radial-gradient(ellipse at top left, #7f50e4, #4c05d0);
+  background-image: radial-gradient(ellipse at top left, #014848, #00312F);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

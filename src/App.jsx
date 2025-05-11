@@ -1,15 +1,18 @@
 import Post from "./components/Post";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TradeForm from "./components/TradeForm";
 import Dashboard from "./pages/Dashboard";
+import TradeDetails from "./pages/TradeDetails";
 
 function App() {
   return (
-    <main>
-      <Dashboard />
-      <TradeForm />
-    </main>
-    
-  ) ;
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/trade/:id" element={<TradeDetails />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
