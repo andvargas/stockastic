@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TradeForm from "../components/TradeForm";
 import { Link } from "react-router-dom";
+import Modal from "../components/Modal";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([
@@ -27,6 +28,8 @@ const Dashboard = () => {
       status: "Closed",
     },
   ]);
+
+  const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
 
   const handleAddTrade = (newTrade) => {
     const tradeWithId = { ...newTrade, id: Date.now() };
@@ -101,9 +104,47 @@ const Dashboard = () => {
         </div>
 
         {/* Add Trade Button */}
-        <div className="mt-8">
+        <button
+          onClick={() => setIsTradeModalOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-8 hover:bg-blue-700 transition-colors duration-300"
+        >
+          Add Trade
+        </button>
+
+        <Modal isOpen={isTradeModalOpen} onClose={() => setIsTradeModalOpen(false)} title="Add New Trade">
           <TradeForm onAddTrade={handleAddTrade} />
-        </div>
+        </Modal>
+
+        {/* <div className="flex justify-center mt-8">
+          <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
+            Add New Trade
+          </button>
+
+          {showModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg relative">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="absolute top-2 right-2 text-2xl text-red-800 hover:rotate-90 transition-transform duration-200"
+                >
+                  ✖
+                </button>
+
+                <h2 className="text-xl font-bold mb-4">Add New Trade</h2>
+                <TradeForm
+                  onAddTrade={(values) => {
+                    console.log(values);
+                    setShowModal(false); // close modal after submit
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div> */}
+
+        {/* <div className="mt-8">
+          <TradeForm onAddTrade={handleAddTrade} />
+        </div> */}
       </div>
     </div>
   );

@@ -2,6 +2,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
 const TradeForm = ({ onAddTrade }) => {
+  const avgSL = 1.69; // calculation based on research of 40 trades on 12 May 2025
+  const avgTP = 3.27; // calculation based on research of 40 trades on 12 May 2025
+  const accRiskTrade = 100; // account risk per trade, to calculate recommended quantity
+
   const tradeSchema = Yup.object().shape({
     market: Yup.string().required("Market is required"),
     ticker: Yup.string().required("Ticker is required"),
@@ -35,7 +39,7 @@ const TradeForm = ({ onAddTrade }) => {
         resetForm();
       }}
     >
-      {() => (
+      {({ setFieldValue, values }) => (
         <Form className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -53,6 +57,37 @@ const TradeForm = ({ onAddTrade }) => {
               <ErrorMessage name="ticker" component="div" className="text-red-500 text-sm" />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label>Type</label>
+              <Field as="select" name="type" className="border p-2 w-48">
+                <option value="Long">Long</option>
+                <option value="Short">Short</option>
+              </Field>
+            </div>
+            <div>
+              <label>ATR</label>
+              <Field
+                type="number"
+                name="atr"
+                className="border p-2"
+                onChange={(e) => {
+                  const atrValue = parseFloat(e.target.value);
+                  setFieldValue("atr", atrValue);
+                  const entryPriceValue = parseFloat(values.entryPrice);
+
+                  if (!isNaN(entryPriceValue)) {
+                    setFieldValue("stopLoss", (entryPriceValue - avgSL * atrValue).toFixed(4));
+                    setFieldValue("takeProfit", (entryPriceValue + avgTP * atrValue).toFixed(4));
+                  }
+                  if (!isNaN(atrValue)) {
+                    setFieldValue("quantity", accRiskTrade / (avgSL * atrValue)).toFixed(4);
+                  }
+                }}
+              />
+              <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
+            </div>
+          </div>
 
           <div>
             <label>Purchase Date</label>
@@ -63,7 +98,20 @@ const TradeForm = ({ onAddTrade }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="entryPrice">Entry Price</label>
-              <Field type="number" name="entryPrice" className="border p-2" />
+              <Field
+                type="number"
+                name="entryPrice"
+                className="border p-2"
+                onChange={(e) => {
+                  const entryPriceValue = parseFloat(e.target.value);
+                  setFieldValue("entryPrice", entryPriceValue);
+                  const atrValue = parseFloat(values.atr);
+                  if (!isNaN(atrValue)) {
+                    setFieldValue("stopLoss", (entryPriceValue - avgSL * atrValue).toFixed(4));
+                    setFieldValue("takeProfit", (entryPriceValue + avgTP * atrValue).toFixed(4));
+                  }
+                }}
+              />
               <ErrorMessage name="entryPrice" component="div" className="text-red-500 text-sm" />
             </div>
             <div>
@@ -81,28 +129,6 @@ const TradeForm = ({ onAddTrade }) => {
             <div>
               <label>Take Profit</label>
               <Field type="number" name="takeProfit" className="border p-2" />
-              <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label>Type</label>
-              <Field as="select" name="type" className="border p-2 w-48">
-                <option value="Long">Long</option>
-                <option value="Short">Short</option>
-              </Field>
-            </div>
-            {/* <div> don't need this for now
-              <label>Status</label>
-              <Field as="select" name="status" className="border p-2 w-48">
-                <option value="Open">Open</option>
-                <option value="Closed">Closed</option>
-              </Field>
-            </div> */}
-            <div>
-              <label>ATR</label>
-              <Field type="number" name="atr" className="border p-2" />
               <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
             </div>
           </div>

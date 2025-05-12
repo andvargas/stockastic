@@ -1,6 +1,4 @@
-import Post from "./components/Post";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import TradeForm from "./components/TradeForm";
 import Dashboard from "./pages/Dashboard";
 import TradeDetails from "./pages/TradeDetails";
 

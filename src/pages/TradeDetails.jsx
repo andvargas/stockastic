@@ -61,14 +61,14 @@ const TradeDetails = () => {
     { key: "type", label: "Type", type: "select", inputClass: "w-32", options: ["Long", "Short", "PaperMoney Long", "PaperMoney Short"] },
     { key: "atr", label: "ATR", type: "number", inputClass: "w-24" },
     { key: "pnl", label: "P/L", type: "number", inputClass: "w-24" },
-    { key: "overnightInterest", label: "Overnight Interest", type: "number", inputClass: "w-24"},
+    { key: "overnightInterest", label: "Overnight Interest", type: "number", inputClass: "w-24" },
     { key: "closeDate", label: "Close Date", type: "date", inputClass: "w-40" },
     { key: "closePrice", label: "Close Price", type: "number", inputClass: "w-24" },
-    { key: "daysTraded", label: "Days Traded", type: "number", inputClass: "w-24"},
-    { key: "assetValue", label: "Asset Current Value", type: "number", inputClass: "w-24"},
-    { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even"]},
-    { key: "strategy", label: "Strategy", type: "select", inputClass: "w-24", options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2"]},
-    { key: "note", label: "Note", type: "textarea", inputClass: "w-full"}
+    { key: "daysTraded", label: "Days Traded", type: "number", inputClass: "w-24" },
+    { key: "assetValue", label: "Asset Current Value", type: "number", inputClass: "w-24" },
+    { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even"] },
+    { key: "strategy", label: "Strategy", type: "select", inputClass: "w-24", options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2"] },
+    { key: "note", label: "Note", type: "textarea", inputClass: "w-full" },
   ];
 
   const tickerNames = {
@@ -77,13 +77,17 @@ const TradeDetails = () => {
     GOOGL: "Alphabet Inc.",
     AMZN: "Amazon.com Inc.",
   };
-  
+
   const companyName = tickerNames[trade.ticker] || "Unknown Company";
+
+  // toDo: Make this two columns, add some style
 
   return (
     <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-2xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
       <h1 className="text-2xl font-bold mb-4">Trade Details</h1>
-      <h2 className="text-xl font-bold">{trade.ticker} - {companyName}</h2>
+      <h2 className="text-xl font-bold">
+        {trade.ticker} - {companyName}
+      </h2>
 
       <div className="space-y-4">
         {tradeFields.map(({ key, label, type, inputClass, transform, options }) => (
@@ -93,11 +97,7 @@ const TradeDetails = () => {
               {editingField === key ? (
                 <>
                   {type === "select" ? (
-                    <select
-                      className={`border rounded p-1 ${inputClass}`}
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value)}
-                    >
+                    <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)}>
                       {options.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -109,9 +109,7 @@ const TradeDetails = () => {
                       type={type}
                       className={`border rounded p-1 ${inputClass}`}
                       value={tempValue}
-                      onChange={(e) =>
-                        setTempValue(transform ? transform(e.target.value) : e.target.value)
-                      }
+                      onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
                     />
                   )}
                   <RoundIconButton onClick={handleSave} icon={Save} />
@@ -127,10 +125,7 @@ const TradeDetails = () => {
         ))}
       </div>
 
-      <button
-        onClick={() => navigate(-1)}
-        className="mt-8 bg-gray-300 hover:bg-gray-400 text-sm px-4 py-2 rounded"
-      >
+      <button onClick={() => navigate(-1)} className="mt-8 bg-gray-300 hover:bg-gray-400 text-sm px-4 py-2 rounded">
         ← Back to Dashboard
       </button>
     </div>
