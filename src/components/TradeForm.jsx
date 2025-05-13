@@ -1,50 +1,67 @@
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { addTrade } from "../services/stockService";
 
-const TradeForm = ({ onAddTrade }) => {
-  const avgSL = 1.56; // calculation based on research of 60 trades on 13 May 2025
-  const avgTP = 3.54; // calculation based on research of 60 trades on 13 May 2025
-  const accRiskTrade = 100; // account risk per trade, to calculate recommended quantity
+const avgSL = 1.56;
+const avgTP = 3.54;
+const accRiskTrade = 100;
 
-  const tradeSchema = Yup.object().shape({
-    market: Yup.string().required("Market is required"),
-    ticker: Yup.string().required("Ticker is required"),
-    entryPrice: Yup.number().positive().required("Entry price is required"),
-    quantity: Yup.number().positive().integer().required("Quantity is required"),
-    date: Yup.string().required("Date is required"),
-    stopLoss: Yup.number().nullable(),
-    takeProfit: Yup.number().nullable(),
-    type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
-    status: Yup.string().oneOf(["Open", "Closed"]).required("Status is required"),
-    atr: Yup.number().nullable(),
-  });
+const tradeSchema = Yup.object().shape({
+  market: Yup.string().required("Market is required"),
+  ticker: Yup.string().required("Ticker is required"),
+  entryPrice: Yup.number().positive().required("Entry price is required"),
+  quantity: Yup.number().positive().integer().required("Quantity is required"),
+  date: Yup.string().required("Date is required"),
+  stopLoss: Yup.number().nullable(),
+  takeProfit: Yup.number().nullable(),
+  type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
+  status: Yup.string().oneOf(["Open", "Closed"]).required("Status is required"),
+  atr: Yup.number().nullable(),
+});
+
+const TradeForm = () => {
+  const calculateTradeLevels = (setFieldValue, values, field, value) => {
+    const atrValue = field === "atr" ? parseFloat(value) : parseFloat(values.atr);
+    const entryPriceValue = field === "entryPrice" ? parseFloat(value) : parseFloat(values.entryPrice);
+
+    if (!isNaN(atrValue) && !isNaN(entryPriceValue)) {
+      const stopLoss = (entryPriceValue - avgSL * atrValue).toFixed(4);
+      const takeProfit = (entryPriceValue + avgTP * atrValue).toFixed(4);
+
+      setFieldValue("stopLoss", stopLoss);
+      setFieldValue("takeProfit", takeProfit);
+    }
+    if (!isNaN(atrValue)) {
+      const quantity = Math.floor(accRiskTrade / (avgSL * atrValue));
+      setFieldValue("quantity", quantity);
+    }
+  };
 
   const handleAddTrade = async (newTrade) => {
-    await addTrade(newTrade);
+    try {
+      await addTrade(newTrade);
+      console.log("Trade added successfully");
+    } catch (error) {
+      console.error("Error adding trade:", error);
+    }
   };
 
   return (
     <Formik
       initialValues={{
         market: "LON",
-        currency: "GBP",
+        currency: "GBX",
         ticker: "",
         entryPrice: "",
         quantity: "",
-        date: new Date().toISOString().split("T")[0], // format 'YYYY-MM-DD'
+        date: new Date().toISOString().split("T")[0],
         stopLoss: "",
         takeProfit: "",
         type: "Long",
         status: "Open",
         atr: "",
-        pnl: "",
         overnightInterest: "",
-        closeDate: "",
-        closePrice: "",
-        wnl: "",
-        strategy: "",
         note: "",
       }}
       validationSchema={tradeSchema}
@@ -53,106 +70,121 @@ const TradeForm = ({ onAddTrade }) => {
         resetForm();
       }}
     >
-      {({ setFieldValue, values }) => (
-        <Form className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label>Market</label>
-              <Field as="select" name="market" className="border p-2 w-48">
-                <option value="LON">LON</option>
-                <option value="NYSE">NYSE</option>
-                <option value="NASDAQ">NASDAQ</option>
-              </Field>
-              <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
-            </div>
-            <div>
-              <label>Ticker</label>
-              <Field name="ticker" className="border p-2 uppercase" />
-              <ErrorMessage name="ticker" component="div" className="text-red-500 text-sm" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label>Type</label>
-              <Field as="select" name="type" className="border p-2 w-48">
-                <option value="Long">Long</option>
-                <option value="Short">Short</option>
-              </Field>
-            </div>
-            <div>
-              <label>ATR</label>
-              <Field
-                type="number"
-                name="atr"
-                className="border p-2"
-                onChange={(e) => {
-                  const atrValue = parseFloat(e.target.value);
-                  setFieldValue("atr", atrValue);
-                  const entryPriceValue = parseFloat(values.entryPrice);
+      {({ setFieldValue, values }) => {
+        useEffect(() => {
+          if (values.market === "LON") {
+            setFieldValue("currency", "GBX");
+          } else if (values.market === "NASDAQ" || values.market === "NYSE") {
+            setFieldValue("currency", "USD");
+          }
+        }, [values.market, setFieldValue]);
 
-                  if (!isNaN(entryPriceValue)) {
-                    setFieldValue("stopLoss", (entryPriceValue - avgSL * atrValue).toFixed(4));
-                    setFieldValue("takeProfit", (entryPriceValue + avgTP * atrValue).toFixed(4));
-                  }
-                  if (!isNaN(atrValue)) {
-                    const recommendedQuantity = accRiskTrade / (avgSL * atrValue);
-                    setFieldValue("quantity", Math.floor(recommendedQuantity));
-                  }
-                }}
-              />
-              <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
+        return (
+          <Form className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Market</label>
+                <Field as="select" name="market" className="border p-2 w-full">
+                  <option value="LON">LON</option>
+                  <option value="NYSE">NYSE</option>
+                  <option value="NASDAQ">NASDAQ</option>
+                </Field>
+                <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
+              </div>
+              <div>
+                <label>Ticker</label>
+                <Field
+                  name="ticker"
+                  className="border p-2 uppercase w-full"
+                  onChange={(e) => setFieldValue("ticker", e.target.value.toUpperCase())}
+                />
+                <ErrorMessage name="ticker" component="div" className="text-red-500 text-sm" />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label>Purchase Date</label>
-            <Field type="date" name="date" className="border p-2 w-full" />
-            <ErrorMessage name="date" component="div" className="text-red-500 text-sm w-full" />
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Type</label>
+                <Field as="select" name="type" className="border p-2 w-full">
+                  <option value="Long">Long</option>
+                  <option value="Short">Short</option>
+                </Field>
+              </div>
+              <div>
+                <label>ATR</label>
+                <Field
+                  type="number"
+                  name="atr"
+                  className="border p-2 w-full"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFieldValue("atr", value);
+                    calculateTradeLevels(setFieldValue, values, "atr", value);
+                  }}
+                />
+                <ErrorMessage name="atr" component="div" className="text-red-500 text-sm" />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="entryPrice">Entry Price</label>
-              <Field
-                type="number"
-                name="entryPrice"
-                className="border p-2"
-                onChange={(e) => {
-                  const entryPriceValue = parseFloat(e.target.value);
-                  setFieldValue("entryPrice", entryPriceValue);
-                  const atrValue = parseFloat(values.atr);
-                  if (!isNaN(atrValue)) {
-                    setFieldValue("stopLoss", (entryPriceValue - avgSL * atrValue).toFixed(4));
-                    setFieldValue("takeProfit", (entryPriceValue + avgTP * atrValue).toFixed(4));
-                  }
-                }}
-              />
-              <ErrorMessage name="entryPrice" component="div" className="text-red-500 text-sm" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Purchase Date</label>
+                <Field type="date" name="date" className="border p-2 w-full" />
+                <ErrorMessage name="date" component="div" className="text-red-500 text-sm" />
+              </div>
+              <div>
+                <label>Overnight Interest</label>
+                <Field type="number" name="overnightInterest" className="border p-2 w-full" />
+                <ErrorMessage name="overnightInterest" component="div" className="text-red-500 text-sm" />
+              </div>
             </div>
-            <div>
-              <label>Quantity</label>
-              <Field type="number" name="quantity" className="border p-2" />
-              <ErrorMessage name="quantity" component="div" className="text-red-500 text-sm" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label>Stop Loss</label>
-              <Field type="number" name="stopLoss" className="border p-2" />
-              <ErrorMessage name="stopLoss" component="div" className="text-red-500 text-sm" />
-            </div>
-            <div>
-              <label>Take Profit</label>
-              <Field type="number" name="takeProfit" className="border p-2" />
-              <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
-            </div>
-          </div>
 
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-            Add Trade
-          </button>
-        </Form>
-      )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Entry Price</label>
+                <Field
+                  type="number"
+                  name="entryPrice"
+                  className="border p-2 w-full"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFieldValue("entryPrice", value);
+                    calculateTradeLevels(setFieldValue, values, "entryPrice", value);
+                  }}
+                />
+                <ErrorMessage name="entryPrice" component="div" className="text-red-500 text-sm" />
+              </div>
+              <div>
+                <label>Quantity</label>
+                <Field type="number" name="quantity" className="border p-2 w-full" />
+                <ErrorMessage name="quantity" component="div" className="text-red-500 text-sm" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label>Stop Loss</label>
+                <Field type="number" name="stopLoss" className="border p-2 w-full" />
+                <ErrorMessage name="stopLoss" component="div" className="text-red-500 text-sm" />
+              </div>
+              <div>
+                <label>Take Profit</label>
+                <Field type="number" name="takeProfit" className="border p-2 w-full" />
+                <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <label>Note</label>
+              <Field as="textarea" name="note" className="border p-2 w-full" />
+            </div>
+
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+              Add Trade
+            </button>
+          </Form>
+        );
+      }}
     </Formik>
   );
 };
