@@ -1,9 +1,11 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useEffect, useState } from "react";
+import { addTrade } from "../services/stockService";
 
 const TradeForm = ({ onAddTrade }) => {
-  const avgSL = 1.69; // calculation based on research of 40 trades on 12 May 2025
-  const avgTP = 3.27; // calculation based on research of 40 trades on 12 May 2025
+  const avgSL = 1.56; // calculation based on research of 60 trades on 13 May 2025
+  const avgTP = 3.54; // calculation based on research of 60 trades on 13 May 2025
   const accRiskTrade = 100; // account risk per trade, to calculate recommended quantity
 
   const tradeSchema = Yup.object().shape({
@@ -19,10 +21,15 @@ const TradeForm = ({ onAddTrade }) => {
     atr: Yup.number().nullable(),
   });
 
+  const handleAddTrade = async (newTrade) => {
+    await addTrade(newTrade);
+  };
+
   return (
     <Formik
       initialValues={{
         market: "LON",
+        currency: "GBP",
         ticker: "",
         entryPrice: "",
         quantity: "",
@@ -32,10 +39,17 @@ const TradeForm = ({ onAddTrade }) => {
         type: "Long",
         status: "Open",
         atr: "",
+        pnl: "",
+        overnightInterest: "",
+        closeDate: "",
+        closePrice: "",
+        wnl: "",
+        strategy: "",
+        note: "",
       }}
       validationSchema={tradeSchema}
-      onSubmit={(values, { resetForm }) => {
-        onAddTrade(values);
+      onSubmit={async (values, { resetForm }) => {
+        await handleAddTrade(values);
         resetForm();
       }}
     >
@@ -81,7 +95,8 @@ const TradeForm = ({ onAddTrade }) => {
                     setFieldValue("takeProfit", (entryPriceValue + avgTP * atrValue).toFixed(4));
                   }
                   if (!isNaN(atrValue)) {
-                    setFieldValue("quantity", accRiskTrade / (avgSL * atrValue)).toFixed(4);
+                    const recommendedQuantity = accRiskTrade / (avgSL * atrValue);
+                    setFieldValue("quantity", Math.floor(recommendedQuantity));
                   }
                 }}
               />
