@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { addTrade } from "../services/stockService";
 
 const avgSL = 1.56;
 const avgTP = 3.54;
@@ -20,7 +19,13 @@ const tradeSchema = Yup.object().shape({
   atr: Yup.number().nullable(),
 });
 
-const TradeForm = () => {
+const currencyRatesToGBP = {
+  GBX: 0.01,
+  USD: 0.75,
+  GBP: 1,
+};
+
+const TradeForm = ({ onAddTrade, onClose }) => {
   const calculateTradeLevels = (setFieldValue, values, field, value) => {
     const atrValue = field === "atr" ? parseFloat(value) : parseFloat(values.atr);
     const entryPriceValue = field === "entryPrice" ? parseFloat(value) : parseFloat(values.entryPrice);
@@ -33,19 +38,21 @@ const TradeForm = () => {
       setFieldValue("takeProfit", takeProfit);
     }
     if (!isNaN(atrValue)) {
-      const quantity = Math.floor(accRiskTrade / (avgSL * atrValue));
+      const currencyRate = currencyRatesToGBP[values.currency] || 1; // default 1 if unknown
+      const riskPerUnitGBP = avgSL * atrValue * currencyRate;
+      const quantity = Math.floor(accRiskTrade / riskPerUnitGBP);
       setFieldValue("quantity", quantity);
     }
   };
 
-  const handleAddTrade = async (newTrade) => {
-    try {
-      await addTrade(newTrade);
-      console.log("Trade added successfully");
-    } catch (error) {
-      console.error("Error adding trade:", error);
-    }
-  };
+  // const handleAddTrade = async (newTrade) => {
+  //   try {
+  //     await addTrade(newTrade);
+  //     console.log("Trade added successfully");
+  //   } catch (error) {
+  //     console.error("Error adding trade:", error);
+  //   }
+  // };
 
   return (
     <Formik
@@ -66,8 +73,11 @@ const TradeForm = () => {
       }}
       validationSchema={tradeSchema}
       onSubmit={async (values, { resetForm }) => {
-        await handleAddTrade(values);
-        resetForm();
+        const success = await onAddTrade(values);
+        if (success) {
+          resetForm();
+          onClose();
+        }
       }}
     >
       {({ setFieldValue, values }) => {

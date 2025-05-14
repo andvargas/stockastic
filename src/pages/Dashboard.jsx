@@ -1,45 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getTrades } from "../services/stockService";
 import TradeForm from "../components/TradeForm";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
+import { addTrade } from "../services/stockService";
 
 const Dashboard = () => {
-  const [trades, setTrades] = useState([
-    {
-      id: 1,
-      ticker: "AAPL",
-      type: "Long",
-      entryPrice: 150,
-      quantity: 10,
-      date: "2025-04-29",
-      stopLoss: 145,
-      takeProfit: 165,
-      status: "Open",
-    },
-    {
-      id: 2,
-      ticker: "TSLA",
-      type: "Short",
-      entryPrice: 720,
-      quantity: 5,
-      date: "2025-04-25",
-      stopLoss: 750,
-      takeProfit: 690,
-      status: "Closed",
-    },
-  ]);
-
+  const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
 
-  const handleAddTrade = (newTrade) => {
-    const tradeWithId = { ...newTrade, id: Date.now() };
-    setTrades((prevTrades) => [...prevTrades, tradeWithId]);
+  useEffect(() => {
+    const fetchTrades = async () => {
+      try {
+        const res = await getTrades();
+        setTrades(res.data);
+      } catch (err) {
+        console.error("Error fetching trades", err);
+      }
+    };
+
+    fetchTrades();
+  }, []);
+
+  const handleAddTrade = async (newTrade) => {
+    try {
+      const res = await addTrade(newTrade);
+      setTrades((prevTrades) => [...prevTrades, res.data]);
+      return true;
+    } catch (err) {
+      console.error("Error adding trade", err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">📊 My Trading Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">Stockastic Trading Dashboard</h1>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -72,8 +68,9 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
+              {console.log(trades)}
               {trades.map((trade) => (
-                <tr key={trade.id}>
+                <tr key={trade._id}>
                   <td className="border-b p-2">
                     <Link to={`/trade/${trade.id}`}>{trade.ticker}</Link>
                   </td>
@@ -112,42 +109,13 @@ const Dashboard = () => {
         </button>
 
         <Modal isOpen={isTradeModalOpen} onClose={() => setIsTradeModalOpen(false)} title="Add New Trade">
-          <TradeForm onAddTrade={handleAddTrade} />
+          <TradeForm onAddTrade={handleAddTrade} onClose={() => setIsTradeModalOpen(false)} />
         </Modal>
-
-        {/* <div className="flex justify-center mt-8">
-          <button onClick={() => setShowModal(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg">
-            Add New Trade
-          </button>
-
-          {showModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-2xl shadow-lg w-full max-w-lg relative">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="absolute top-2 right-2 text-2xl text-red-800 hover:rotate-90 transition-transform duration-200"
-                >
-                  ✖
-                </button>
-
-                <h2 className="text-xl font-bold mb-4">Add New Trade</h2>
-                <TradeForm
-                  onAddTrade={(values) => {
-                    console.log(values);
-                    setShowModal(false); // close modal after submit
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div> */}
-
-        {/* <div className="mt-8">
-          <TradeForm onAddTrade={handleAddTrade} />
-        </div> */}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+
+// todo: onClose is not working
