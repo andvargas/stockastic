@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PencilIcon, Save } from "lucide-react";
 import RoundIconButton from "../components/RoundIconButton";
-import { getTradeById } from "../services/stockService";
+import { getTradeById, updateTrade } from "../services/stockService";
+import toast from "react-hot-toast";
 
 const TradeDetails = () => {
   const { id } = useParams();
@@ -20,20 +21,34 @@ const TradeDetails = () => {
         setTrade(data);
       } catch (err) {
         console.error("Error fetching trade:", err);
+        toast.error("Failed to fetch trade details.");
       }
     };
 
     fetchTrade();
   }, [id]);
 
-  const handleSave = () => {
-    setTrade({ ...trade, [editingField]: tempValue });
-    setEditingField(null);
+  const handleSave = async () => {
+    try {
+      const updatedField = { [editingField]: tempValue };
+
+      await updateTrade(id, updatedField); // update backend
+      setTrade((prev) => ({ ...prev, ...updatedField })); // update local state
+
+      setEditingField(null);
+      toast.success("Trade updated successfully!");
+    } catch (err) {
+      console.error("Failed to save trade update:", err);
+    }
   };
 
   const handleEdit = (field) => {
     setEditingField(field);
     setTempValue(trade[field]);
+  };
+
+  const handleCancel = () => {
+    setEditingField(null);
   };
 
   const tradeFields = [
@@ -100,6 +115,8 @@ const TradeDetails = () => {
                         </option>
                       ))}
                     </select>
+                  ) : type === "textarea" ? (
+                    <textarea className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
                   ) : (
                     <input
                       type={type}
@@ -109,10 +126,13 @@ const TradeDetails = () => {
                     />
                   )}
                   <RoundIconButton onClick={handleSave} icon={Save} />
+                  <button onClick={handleCancel} className="text-xs text-gray-500">
+                    Cancel
+                  </button>
                 </>
               ) : (
                 <>
-                  <span>{trade[key]}</span>
+                  <span>{trade[key] || "-"}</span>
                   <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} />
                 </>
               )}

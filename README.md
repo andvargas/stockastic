@@ -1,12 +1,27 @@
-# React + Vite
+# 📊 Trading App (React + Node + Mongo)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple trading journal web app to track, view, and update your trades.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- View trade details
+- Edit fields inline with save button
+- Fetch trade data via API
+- Modular, clean React components
+- Toast notifications for success and error messages (coming soon)
 
-## Expanding the ESLint configuration
+## 📦 Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Node.js
+- Express
+- MongoDB (Mongoose)
+- Tailwind CSS
+
+## 📂 Project Structure
+
+See the `/client` and `/server` folders for frontend and backend code.
+
+## 🚀 Setup
+
+1. Clone the repo:

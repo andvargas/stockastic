@@ -17,7 +17,7 @@ export const getTradeById = async (id) => {
   return res.data;
 };
 
-export const updateTrade = async (id, data) => {
-  const res = await axios.put(`${API_URL}/trades/${id}`, data);
+export const updateTrade = async (id, updateFields) => {
+  const res = await axios.put(`${API_URL}/trades/${id}`, updateFields);
   return res.data;
 };
