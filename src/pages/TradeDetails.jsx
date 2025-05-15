@@ -1,37 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PencilIcon, Save } from "lucide-react";
 import RoundIconButton from "../components/RoundIconButton";
+import { getTradeById } from "../services/stockService";
 
 const TradeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [trade, setTrade] = useState({
-    id,
-    ticker: "AAPL",
-    entryPrice: 150,
-    quantity: 10,
-    date: "2025-04-29",
-    stopLoss: 145,
-    takeProfit: 165,
-    status: "Open",
-    market: "LON",
-    type: "Long",
-    atr: 10,
-    pnl: 250,
-    overnightInterest: 0,
-    closeDate: "",
-    closePrice: 0,
-    daysTraded: 0,
-    assetValue: 0,
-    wnl: "",
-    strategy: "",
-    note: "",
-  });
+  const [trade, setTrade] = useState(null);
 
   const [editingField, setEditingField] = useState(null);
   const [tempValue, setTempValue] = useState("");
+
+  useEffect(() => {
+    const fetchTrade = async () => {
+      try {
+        const data = await getTradeById(id);
+        setTrade(data);
+      } catch (err) {
+        console.error("Error fetching trade:", err);
+      }
+    };
+
+    fetchTrade();
+  }, [id]);
 
   const handleSave = () => {
     setTrade({ ...trade, [editingField]: tempValue });
@@ -78,6 +71,8 @@ const TradeDetails = () => {
     GOOGL: "Alphabet Inc.",
     AMZN: "Amazon.com Inc.",
   };
+
+  if (!trade) return <div className="mt-20 text-center">Loading trade details...</div>;
 
   const companyName = tickerNames[trade.ticker] || "Unknown Company";
 

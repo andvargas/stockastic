@@ -2,13 +2,22 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const addTrade = (tradeData) => {
-  return axios.post(`${API_URL}`, tradeData);
+export const addTrade = async (tradeData) => {
+  const res = await axios.post(`${API_URL}`, tradeData);
+  return res.data;
 };
 
-export const getTrades = () => {
-  return axios.get(`${API_URL}`);
+export const getTrades = async () => {
+  const res = await axios.get(`${API_URL}`);
+  return res.data;
 };
 
-export const getTradeById = (id) => axios.get(`${API_URL}/trades/${id}`);
-export const updateTrade = (id, data) => axios.put(`${API_URL}/trades/${id}`, data);
+export const getTradeById = async (id) => {
+  const res = await axios.get(`${API_URL}/trades/${id}`);
+  return res.data;
+};
+
+export const updateTrade = async (id, data) => {
+  const res = await axios.put(`${API_URL}/trades/${id}`, data);
+  return res.data;
+};

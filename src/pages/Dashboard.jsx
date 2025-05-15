@@ -12,8 +12,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const res = await getTrades();
-        setTrades(res.data);
+        const data = await getTrades();
+        setTrades(data);
       } catch (err) {
         console.error("Error fetching trades", err);
       }
@@ -25,7 +25,7 @@ const Dashboard = () => {
   const handleAddTrade = async (newTrade) => {
     try {
       const res = await addTrade(newTrade);
-      setTrades((prevTrades) => [...prevTrades, res.data]);
+      setTrades((prevTrades) => [...prevTrades, res]);
       return true;
     } catch (err) {
       console.error("Error adding trade", err);
@@ -71,7 +71,7 @@ const Dashboard = () => {
               {trades.map((trade) => (
                 <tr key={trade._id}>
                   <td className="border-b p-2">
-                    <Link to={`/trade/${trade.id}`}>{trade.ticker}</Link>
+                    <Link to={`/trade/${trade._id}`}>{trade.ticker}</Link>
                   </td>
                   <td className="border-b p-2 flex items-center gap-2">
                     <span

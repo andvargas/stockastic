@@ -4,5 +4,5 @@ Todo:
   ✔ Wire the backend with the front: Fetch trades from the db @done(25-05-14 15:36)
   ✔ Make the form disappear when submitted @done(25-05-14 16:38)
   ✔ Implement storing dates as actual Date objects in MongoDB - right now is string @done(25-05-15 09:37)
-  ☐ Wire up TradeDetails with the backend
+  ✔ Wire up TradeDetails with the backend @done(25-05-15 17:59)
   ☐ Appears to be a glitch: when I add a trade and modify the quantity, it will save the previously calculated value, not my new one.
