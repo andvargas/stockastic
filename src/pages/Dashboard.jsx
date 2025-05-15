@@ -68,7 +68,6 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {console.log(trades)}
               {trades.map((trade) => (
                 <tr key={trade._id}>
                   <td className="border-b p-2">
@@ -84,7 +83,7 @@ const Dashboard = () => {
                       {trade.quantity} @ £{trade.entryPrice}
                     </span>
                   </td>
-                  <td className="border-b p-2">{trade.date}</td>
+                  <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
                   <td className="border-b p-2">£{trade.stopLoss}</td>
                   <td className="border-b p-2">£{trade.takeProfit}</td>
                   <td className="border-b p-2">

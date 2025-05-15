@@ -50,6 +50,7 @@ const TradeDetails = () => {
     { key: "entryPrice", label: "Entry Price", type: "number", inputClass: "w-24" },
     { key: "date", label: "Date", type: "date", inputClass: "w-40" },
     { key: "stopLoss", label: "Stop Loss", type: "number", inputClass: "w-24" },
+    { key: "breakEven", label: "breakEven", type: "number", inputClass: "w-24" },
     { key: "takeProfit", label: "Take Profit", type: "number", inputClass: "w-24" },
     {
       key: "status",

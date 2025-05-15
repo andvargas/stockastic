@@ -15,6 +15,7 @@ const tradeSchema = Yup.object().shape({
   stopLoss: Yup.number().nullable(),
   takeProfit: Yup.number().nullable(),
   type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
+  assetType: Yup.string().oneOf(["pm", "rm", "cfd", "paperCfd"]).required("Asset type is required"),
   status: Yup.string().oneOf(["Open", "Closed"]).required("Status is required"),
   atr: Yup.number().nullable(),
 });
@@ -66,6 +67,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         stopLoss: "",
         takeProfit: "",
         type: "Long",
+        assetType: "pm",
         status: "Open",
         atr: "",
         overnightInterest: "",
@@ -114,10 +116,19 @@ const TradeForm = ({ onAddTrade, onClose }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label>Type</label>
+                <label> Transaction Type</label>
                 <Field as="select" name="type" className="border p-2 w-full">
                   <option value="Long">Long</option>
                   <option value="Short">Short</option>
+                </Field>
+              </div>
+              <div>
+                <label>Asset Type</label>
+                <Field as="select" name="platform" className="border p-2 w-full">
+                  <option value="pm">Paper Money</option>
+                  <option value="rm">Real Money</option>
+                  <option value="cfd">CFD</option>
+                  <option value="paperCfd">Paper CFD</option>
                 </Field>
               </div>
               <div>
