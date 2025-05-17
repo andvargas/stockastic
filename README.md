@@ -24,4 +24,4 @@ See the `/client` and `/server` folders for frontend and backend code.
 
 ## 🚀 Setup
 
-1. Clone the repo:
+1. Clone the repo: git clone https://github.com/andvargas/stockastic.git

@@ -125,10 +125,10 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               <div>
                 <label>Asset Type</label>
                 <Field as="select" name="platform" className="border p-2 w-full">
-                  <option value="pm">Paper Money</option>
-                  <option value="rm">Real Money</option>
-                  <option value="cfd">CFD</option>
-                  <option value="paperCfd">Paper CFD</option>
+                  <option value="Paper Money">Paper Money</option>
+                  <option value="Real Money">Real Money</option>
+                  <option value="CFD">CFD</option>
+                  <option value="Paper CFD">Paper CFD</option>
                 </Field>
               </div>
               <div>

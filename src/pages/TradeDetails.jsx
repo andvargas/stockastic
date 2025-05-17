@@ -30,10 +30,12 @@ const TradeDetails = () => {
 
   const handleSave = async () => {
     try {
-      const updatedField = { [editingField]: tempValue };
+      const valueToSave = tempValue !== "" ? tempValue : trade[editingField];
+      const updatedField = { [editingField]: valueToSave };
 
-      await updateTrade(id, updatedField); // update backend
-      setTrade((prev) => ({ ...prev, ...updatedField })); // update local state
+      await updateTrade(id, updatedField);
+
+      setTrade((prev) => ({ ...prev, ...updatedField }));
 
       setEditingField(null);
       toast.success("Trade updated successfully!");
@@ -43,8 +45,15 @@ const TradeDetails = () => {
   };
 
   const handleEdit = (field) => {
+    const defaultValues = {
+      wnl: "Won",
+      status: "Open",
+      type: "Long",
+      strategy: "none",
+    };
+
     setEditingField(field);
-    setTempValue(trade[field]);
+    setTempValue(trade[field] !== undefined ? trade[field] : defaultValues[field] || "");
   };
 
   const handleCancel = () => {
@@ -56,9 +65,8 @@ const TradeDetails = () => {
     { key: "market", label: "Market", type: "text", inputClass: "w-24" },
     { key: "quantity", label: "Quantity", type: "number", inputClass: "w-24" },
     { key: "entryPrice", label: "Entry Price", type: "number", inputClass: "w-24" },
-    { key: "date", label: "Date", type: "date", inputClass: "w-40" },
+    { key: "date", label: "Entry Date", type: "date", inputClass: "w-40" },
     { key: "stopLoss", label: "Stop Loss", type: "number", inputClass: "w-24" },
-    { key: "breakEven", label: "breakEven", type: "number", inputClass: "w-24" },
     { key: "takeProfit", label: "Take Profit", type: "number", inputClass: "w-24" },
     {
       key: "status",
@@ -67,13 +75,14 @@ const TradeDetails = () => {
       inputClass: "w-32",
       options: ["Open", "Closed"],
     },
-    { key: "type", label: "Type", type: "select", inputClass: "w-32", options: ["Long", "Short", "PaperMoney Long", "PaperMoney Short"] },
+    { key: "type", label: "Transaction Type", type: "select", inputClass: "w-32", options: ["Long", "Short", "PaperMoney Long", "PaperMoney Short"] },
+    { key: "assetType", label: "Asset Type", type: "select", inputClass: "w-32", options: ["Real Money", "Paper Money", "CFD", "Paper CFD"] },
     { key: "atr", label: "ATR", type: "number", inputClass: "w-24" },
     { key: "pnl", label: "P/L", type: "number", inputClass: "w-24" },
     { key: "overnightInterest", label: "Overnight Interest", type: "number", inputClass: "w-24" },
     { key: "closeDate", label: "Close Date", type: "date", inputClass: "w-40" },
     { key: "closePrice", label: "Close Price", type: "number", inputClass: "w-24" },
-    { key: "daysTraded", label: "Days Traded", type: "number", inputClass: "w-24" },
+    { key: "daysTraded", label: "Days Traded", type: "daysTraded" },
     { key: "assetValue", label: "Asset Current Value", type: "number", inputClass: "w-24" },
     { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even"] },
     { key: "strategy", label: "Strategy", type: "select", inputClass: "w-24", options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2"] },
@@ -91,8 +100,26 @@ const TradeDetails = () => {
 
   const companyName = tickerNames[trade.ticker] || "Unknown Company";
 
-  // toDo: Make this two columns, add some style
+  const formatValue = (value, type) => {
+    if (type === "daysTraded") {
+      const start = new Date(trade.date);
+      const end = trade.closedDate ? new Date(trade.closedDate) : new Date();
+      const diffTime = end - start;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return `${diffDays} day${diffDays !== 1 ? "s" : ""}`;
+    }
 
+    if (!value) return "-";
+    if (type === "date") return new Date(value).toLocaleDateString();
+    return value;
+  };
+
+  // toDo: Make this two columns, add some style
+  {
+    {
+      console.log(trade);
+    }
+  }
   return (
     <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-2xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
       <h1 className="text-2xl font-bold mb-4">Trade Details</h1>
@@ -108,7 +135,7 @@ const TradeDetails = () => {
               {editingField === key ? (
                 <>
                   {type === "select" ? (
-                    <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)}>
+                    <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value || "")}>
                       {options.map((option) => (
                         <option key={option} value={option}>
                           {option}
@@ -132,7 +159,7 @@ const TradeDetails = () => {
                 </>
               ) : (
                 <>
-                  <span>{trade[key] || "-"}</span>
+                  <span>{formatValue(trade[key], type, trade)}</span>
                   <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} />
                 </>
               )}

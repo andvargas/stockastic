@@ -4,6 +4,7 @@ import TradeForm from "../components/TradeForm";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
 import { addTrade } from "../services/stockService";
+import Tooltip from "../components/Tooltip";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([]);
@@ -69,7 +70,7 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {trades.map((trade) => (
-                <tr key={trade._id}>
+                <tr key={trade._id} className={trade.wnl === "Broke Even" ? "bg-gray-100" : ""}>
                   <td className="border-b p-2">
                     <Link to={`/trade/${trade._id}`}>{trade.ticker}</Link>
                   </td>
@@ -85,7 +86,16 @@ const Dashboard = () => {
                   </td>
                   <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
                   <td className="border-b p-2">£{trade.stopLoss}</td>
-                  <td className="border-b p-2">£{trade.takeProfit}</td>
+                  {/* <td className="border-b p-2">£{trade.takeProfit}</td> */}
+                  <td className={trade.wnl === "Broke Even" ? "bg-gray-100 border-b p-2" : "border-b p-2"}>
+                    {trade.wnl === "Broke Even" ? (
+                      trade.takeProfit
+                    ) : (
+                      <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
+                        <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.05).toFixed(2)}
+                      </Tooltip>
+                    )}
+                  </td>
                   <td className="border-b p-2">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.status === "Open" ? "bg-blue-500" : "bg-gray-500"}`}
