@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilIcon, Save } from "lucide-react";
+import { PencilIcon, Save, Trash, LayoutList } from "lucide-react";
 import RoundIconButton from "../components/RoundIconButton";
-import { getTradeById, updateTrade } from "../services/stockService";
+import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
 import toast from "react-hot-toast";
+import Tooltip from "../components/Tooltip";
 
 const TradeDetails = () => {
   const { id } = useParams();
@@ -120,9 +121,37 @@ const TradeDetails = () => {
       console.log(trade);
     }
   }
+
+  const handleDelete = async () => {
+    try {
+      await deleteTrade(id);
+      toast.success("Trade deleted successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting trade:", error);
+      toast.error("Failed to delete trade");
+    }
+  };
+
   return (
     <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-2xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
-      <h1 className="text-2xl font-bold mb-4">Trade Details</h1>
+      {/* Nav */}
+      <div className="flex items-center justify-between mb-6 shadow-xs pb-3">
+        <h1 className="text-2xl font-bold">Trade Details</h1>
+        <div className="flex items-center gap-3">
+          <Tooltip tooltipText="Back to Dashboard" position="bottom">
+            <RoundIconButton
+              onClick={() => navigate(-1)}
+              icon={LayoutList}
+              color="bg-gray-100 hover:bg-gray-300"
+              iconClassName="w-8 h-8 text-blue-700"
+            />
+          </Tooltip>
+          <Tooltip tooltipText="Delete share..." position="bottom">
+            <RoundIconButton onClick={handleDelete} icon={Trash} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-red-700" />
+          </Tooltip>
+        </div>
+      </div>
       <h2 className="text-xl font-bold">
         {trade.ticker} - {companyName}
       </h2>
@@ -152,7 +181,7 @@ const TradeDetails = () => {
                       onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
                     />
                   )}
-                  <RoundIconButton onClick={handleSave} icon={Save} />
+                  <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
                   <button onClick={handleCancel} className="text-xs text-gray-500">
                     Cancel
                   </button>
@@ -160,7 +189,7 @@ const TradeDetails = () => {
               ) : (
                 <>
                   <span>{formatValue(trade[key], type, trade)}</span>
-                  <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} />
+                  <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
                 </>
               )}
             </div>

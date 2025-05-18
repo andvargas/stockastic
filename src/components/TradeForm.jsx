@@ -46,15 +46,6 @@ const TradeForm = ({ onAddTrade, onClose }) => {
     }
   };
 
-  // const handleAddTrade = async (newTrade) => {
-  //   try {
-  //     await addTrade(newTrade);
-  //     console.log("Trade added successfully");
-  //   } catch (error) {
-  //     console.error("Error adding trade:", error);
-  //   }
-  // };
-
   return (
     <Formik
       initialValues={{
