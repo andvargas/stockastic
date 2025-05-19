@@ -85,7 +85,7 @@ const TradeDetails = () => {
     { key: "closePrice", label: "Close Price", type: "number", inputClass: "w-24" },
     { key: "daysTraded", label: "Days Traded", type: "daysTraded" },
     { key: "assetValue", label: "Asset Current Value", type: "number", inputClass: "w-24" },
-    { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even"] },
+    { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even", "Pending"] },
     { key: "strategy", label: "Strategy", type: "select", inputClass: "w-24", options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2"] },
     { key: "note", label: "Note", type: "textarea", inputClass: "w-full" },
   ];

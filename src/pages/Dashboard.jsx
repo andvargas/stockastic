@@ -5,10 +5,14 @@ import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
 import { addTrade } from "../services/stockService";
 import Tooltip from "../components/Tooltip";
+import { addNote } from "../services/journalService";
+import toast from "react-hot-toast";
+import AddJournalEntryForm from "../components/AddJournalEntryForm";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
+  const [selectedTradeId, setSelectedTradeId] = useState(null);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -30,6 +34,26 @@ const Dashboard = () => {
       return true;
     } catch (err) {
       console.error("Error adding trade", err);
+    }
+  };
+
+  const openJournalModal = (tradeId) => {
+    setSelectedTradeId(tradeId);
+  };
+
+  const closeJournalModal = () => {
+    setSelectedTradeId(null);
+  };
+
+  const saveJournalEntry = async (entry) => {
+    try {
+      await addNote(entry);
+      toast.success("Journal note added!");
+      closeJournalModal();
+      // optionally trigger a data refresh
+    } catch (error) {
+      console.error("Failed to add journal note", error);
+      toast.error("Failed to add note.");
     }
   };
 
@@ -66,6 +90,7 @@ const Dashboard = () => {
                 <th className="border-b p-2">Stop Loss</th>
                 <th className="border-b p-2">Take Profit</th>
                 <th className="border-b p-2">Status</th>
+                <th className="border-b p-2">Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -103,6 +128,19 @@ const Dashboard = () => {
                       {trade.status}
                     </span>
                   </td>
+                  <td className="border-b p-2">
+                    <button
+                      onClick={() => openJournalModal(trade._id)}
+                      className="bg-cyan-700 px-2 py-0.5 rounded-full text-xs font-medium text-white hover:bg-cyan-400 transition-colors duration-300"
+                    >
+                      Add Note
+                    </button>
+                    {selectedTradeId && (
+                      <Modal isOpen={!!selectedTradeId} onClose={closeJournalModal} title="Add Journal Entry">
+                        <AddJournalEntryForm tradeId={selectedTradeId} onClose={closeJournalModal} />
+                      </Modal>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -112,7 +150,7 @@ const Dashboard = () => {
         {/* Add Trade Button */}
         <button
           onClick={() => setIsTradeModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg mt-8 hover:bg-blue-700 transition-colors duration-300"
+          className="bg-cyan-700 text-white px-4 py-2 rounded-lg mt-8 hover:bg-cyan-400 transition-colors duration-300"
         >
           Add Trade
         </button>
