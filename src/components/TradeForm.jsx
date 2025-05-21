@@ -11,7 +11,7 @@ const tradeSchema = Yup.object().shape({
   ticker: Yup.string().required("Ticker is required"),
   entryPrice: Yup.number().positive().required("Entry price is required"),
   quantity: Yup.number().positive().integer().required("Quantity is required"),
-  date: Yup.string().required("Date is required"),
+  date: Yup.date().required("Date is required"),
   stopLoss: Yup.number().nullable(),
   takeProfit: Yup.number().nullable(),
   type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
@@ -91,6 +91,8 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="LON">LON</option>
                   <option value="NYSE">NYSE</option>
                   <option value="NASDAQ">NASDAQ</option>
+                  <option value="ETR">XETRA(ETR)</option>
+                  <option value="EPA">Euronext Paris(EPA)</option>
                 </Field>
                 <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
               </div>

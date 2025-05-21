@@ -5,6 +5,7 @@ import RoundIconButton from "../components/RoundIconButton";
 import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
 import toast from "react-hot-toast";
 import Tooltip from "../components/Tooltip";
+import JournalEntries from "../components/JournalEntries";
 
 const TradeDetails = () => {
   const { id } = useParams();
@@ -134,7 +135,7 @@ const TradeDetails = () => {
   };
 
   return (
-    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-2xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
+    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-5xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
       {/* Nav */}
       <div className="flex items-center justify-between mb-6 shadow-xs pb-3">
         <h1 className="text-2xl font-bold">Trade Details</h1>
@@ -156,45 +157,58 @@ const TradeDetails = () => {
         {trade.ticker} - {companyName}
       </h2>
 
-      <div className="space-y-4">
-        {tradeFields.map(({ key, label, type, inputClass, transform, options }) => (
-          <div key={key} className="flex items-center justify-between">
-            <p className="font-semibold">{label}:</p>
-            <div className="flex items-center gap-2">
-              {editingField === key ? (
-                <>
-                  {type === "select" ? (
-                    <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value || "")}>
-                      {options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : type === "textarea" ? (
-                    <textarea className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-                  ) : (
-                    <input
-                      type={type}
-                      className={`border rounded p-1 ${inputClass}`}
-                      value={tempValue}
-                      onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
-                    />
-                  )}
-                  <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
-                  <button onClick={handleCancel} className="text-xs text-gray-500">
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span>{formatValue(trade[key], type, trade)}</span>
-                  <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
-                </>
-              )}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        {/* Left side — 2/3 */}
+        <div className="md:col-span-2 space-y-4">
+          {tradeFields.map(({ key, label, type, inputClass, transform, options }) => (
+            <div key={key} className="flex items-center justify-between">
+              <p className="font-semibold">{label}:</p>
+              <div className="flex items-center gap-2">
+                {editingField === key ? (
+                  <>
+                    {type === "select" ? (
+                      <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value || "")}>
+                        {options.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : type === "textarea" ? (
+                      <textarea className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
+                    ) : (
+                      <input
+                        type={type}
+                        className={`border rounded p-1 ${inputClass}`}
+                        value={tempValue}
+                        onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
+                      />
+                    )}
+                    <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
+                    <button onClick={handleCancel} className="text-xs text-gray-500">
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span>{formatValue(trade[key], type, trade)}</span>
+                    <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
+                  </>
+                )}
+              </div>
             </div>
+          ))}
+        </div>
+
+        {/* Right side — 1/3 */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Extras</h3>
+          <div className="p-4 border rounded bg-gray-50 shadow-sm">
+            <p className="text-sm text-gray-600">Add new widgets or components here — e.g. JournalEntries, trade notes, analytics, charts etc.</p>
           </div>
-        ))}
+
+          <JournalEntries tradeId={trade._id} />
+        </div>
       </div>
 
       <button onClick={() => navigate(-1)} className="mt-8 bg-gray-300 hover:bg-gray-400 text-sm px-4 py-2 rounded">
