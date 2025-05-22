@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilIcon, Save, Trash, LayoutList } from "lucide-react";
+import { PencilIcon, Save, Trash, CircleArrowLeft } from "lucide-react";
 import RoundIconButton from "../components/RoundIconButton";
 import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
 import toast from "react-hot-toast";
@@ -143,7 +143,7 @@ const TradeDetails = () => {
           <Tooltip tooltipText="Back to Dashboard" position="bottom">
             <RoundIconButton
               onClick={() => navigate(-1)}
-              icon={LayoutList}
+              icon={CircleArrowLeft}
               color="bg-gray-100 hover:bg-gray-300"
               iconClassName="w-8 h-8 text-blue-700"
             />

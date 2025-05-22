@@ -8,11 +8,14 @@ import Tooltip from "../components/Tooltip";
 import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
+import { RadarIcon } from "lucide-react";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
+  const [showConsidering, setShowConsidering] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -26,6 +29,10 @@ const Dashboard = () => {
 
     fetchTrades();
   }, []);
+
+  const totalTrades = trades.length;
+  const openPositions = trades.filter((trade) => trade.status === "Open").length;
+  const totalPL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
 
   const handleAddTrade = async (newTrade) => {
     try {
@@ -57,6 +64,19 @@ const Dashboard = () => {
     }
   };
 
+  // const filteredTrades = trades.filter((trade) => (showConsidering ? trade.status === "Considering" : trade.status !== "Considering"));
+
+  const filteredTrades = trades.filter((trade) => {
+    // If showConsidering is on
+    if (showConsidering) return trade.status === "Considering";
+
+    // If a status filter is applied
+    if (statusFilter) return trade.status === statusFilter;
+
+    // Otherwise, show everything (except considering if toggle is off)
+    return trade.status !== "Considering";
+  });
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -66,21 +86,31 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Total Trades</h2>
-            <p className="text-2xl font-semibold">12</p>
+            <p className="text-2xl font-semibold">{totalTrades}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Open Positions</h2>
-            <p className="text-2xl font-semibold">3</p>
+            <p className="text-2xl font-semibold">{openPositions}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Total P/L</h2>
-            <p className="text-2xl font-semibold text-green-500">+£1,250</p>
+            <p className={`text-2xl font-semibold ${totalPL >= 0 ? "text-green-500" : "text-red-500"}`}>£{totalPL.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Trade List */}
         <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-xl font-bold mb-4">Trades</h2>
+          <div className="flex justify-between items-center mb-4">
+            <span></span> {/* Empty placeholder */}
+            <h2 className="text-xl font-bold">{showConsidering ? "Potential Buys" : "Trades"}</h2>
+            <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Considering"}>
+              <RadarIcon
+                onClick={() => setShowConsidering(!showConsidering)}
+                className="h-6 w-6 cursor-pointer hover:text-lime-600 transition-colors duration-300"
+              />
+            </Tooltip>
+          </div>
+
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
@@ -94,55 +124,66 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {trades.map((trade) => (
-                <tr key={trade._id} className={trade.wnl === "Broke Even" ? "bg-gray-100" : ""}>
-                  <td className="border-b p-2">
-                    <Link to={`/trade/${trade._id}`}>{trade.ticker}</Link>
-                  </td>
-                  <td className="border-b p-2 flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.type === "Long" ? "bg-green-500" : "bg-red-500"}`}
-                    >
-                      {trade.type}
-                    </span>
-                    <span>
-                      {trade.quantity} @ £{trade.entryPrice}
-                    </span>
-                  </td>
-                  <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
-                  <td className="border-b p-2">£{trade.stopLoss}</td>
-                  {/* <td className="border-b p-2">£{trade.takeProfit}</td> */}
-                  <td className={trade.wnl === "Broke Even" ? "bg-gray-100 border-b p-2" : "border-b p-2"}>
-                    {trade.wnl === "Broke Even" ? (
-                      trade.takeProfit
-                    ) : (
-                      <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
-                        <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.05).toFixed(2)}
-                      </Tooltip>
-                    )}
-                  </td>
-                  <td className="border-b p-2">
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.status === "Open" ? "bg-blue-500" : "bg-gray-500"}`}
-                    >
-                      {trade.status}
-                    </span>
-                  </td>
-                  <td className="border-b p-2">
-                    <button
-                      onClick={() => openJournalModal(trade._id)}
-                      className="bg-cyan-700 px-2 py-0.5 rounded-full text-xs font-medium text-white hover:bg-cyan-400 transition-colors duration-300"
-                    >
-                      Add Note
-                    </button>
-                    {selectedTradeId && (
-                      <Modal isOpen={!!selectedTradeId} onClose={closeJournalModal} title="Add Journal Entry">
-                        <AddJournalEntryForm tradeId={selectedTradeId} onClose={closeJournalModal} />
-                      </Modal>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filteredTrades &&
+                filteredTrades.map((trade) => (
+                  <tr key={trade._id} className={trade.wnl === "Broke Even" ? "bg-gray-100" : ""}>
+                    <td className="border-b p-2">
+                      <Link to={`/trade/${trade._id}`}>{trade.ticker}</Link>
+                    </td>
+                    <td className="border-b p-2 flex items-center gap-2">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.type === "Long" ? "bg-green-500" : "bg-red-500"}`}
+                      >
+                        {trade.type}
+                      </span>
+                      <span>
+                        {trade.quantity} @ £{trade.entryPrice}
+                      </span>
+                    </td>
+                    <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
+                    <td className="border-b p-2">£{trade.stopLoss}</td>
+                    {/* <td className="border-b p-2">£{trade.takeProfit}</td> */}
+                    <td className={trade.wnl === "Broke Even" ? "bg-gray-100 border-b p-2" : "border-b p-2"}>
+                      {trade.wnl === "Broke Even" ? (
+                        trade.takeProfit
+                      ) : (
+                        <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
+                          <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.05).toFixed(2)}
+                        </Tooltip>
+                      )}
+                    </td>
+                    <td className="border-b p-2">
+                      {/* <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
+                          trade.status === "Open" ? "bg-blue-500" : "bg-gray-500"
+                        }`}
+                      >
+                        {trade.status}
+                      </span> */}
+                      <button
+                        onClick={() => setStatusFilter((prev) => (prev === trade.status ? null : trade.status))}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
+                          trade.status === "Open" ? "bg-blue-500" : trade.status === "Closed" ? "bg-gray-500" : "bg-yellow-500"
+                        }`}
+                      >
+                        {trade.status}
+                      </button>
+                    </td>
+                    <td className="border-b p-2">
+                      <button
+                        onClick={() => openJournalModal(trade._id)}
+                        className="bg-cyan-700 px-2 py-0.5 rounded-full text-xs font-medium text-white hover:bg-cyan-400 transition-colors duration-300"
+                      >
+                        Add Note
+                      </button>
+                      {selectedTradeId && (
+                        <Modal isOpen={!!selectedTradeId} onClose={closeJournalModal} title="Add Journal Entry">
+                          <AddJournalEntryForm tradeId={selectedTradeId} onClose={closeJournalModal} />
+                        </Modal>
+                      )}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

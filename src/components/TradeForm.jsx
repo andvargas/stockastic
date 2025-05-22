@@ -16,7 +16,7 @@ const tradeSchema = Yup.object().shape({
   takeProfit: Yup.number().nullable(),
   type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
   assetType: Yup.string().oneOf(["pm", "rm", "cfd", "paperCfd"]).required("Asset type is required"),
-  status: Yup.string().oneOf(["Open", "Closed"]).required("Status is required"),
+  status: Yup.string().oneOf(["Open", "Closed", "Considering"]).required("Status is required"),
   atr: Yup.number().nullable(),
 });
 
@@ -62,7 +62,6 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         status: "Open",
         atr: "",
         overnightInterest: "",
-        note: "",
       }}
       validationSchema={tradeSchema}
       onSubmit={async (values, { resetForm }) => {
@@ -138,6 +137,21 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                 />
                 <ErrorMessage name="atr" component="div" className="text-red-500 text-sm" />
               </div>
+              <div>
+                <Field name="status">
+                  {({ field, form }) => (
+                    <label className="flex items-center gap-2 mt-4">
+                      <input
+                        type="checkbox"
+                        checked={field.value === "Considering"}
+                        onChange={() => form.setFieldValue("status", field.value === "Considering" ? "Open" : "Considering")}
+                        className="accent-cyan-700"
+                      />
+                      Mark as Considering
+                    </label>
+                  )}
+                </Field>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -188,10 +202,10 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               </div>
             </div>
 
-            <div>
+            {/* <div> //don't need this, because there is a journal system implemented
               <label>Note</label>
               <Field as="textarea" name="note" className="border p-2 w-full" />
-            </div>
+            </div> */}
 
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
               Add Trade
