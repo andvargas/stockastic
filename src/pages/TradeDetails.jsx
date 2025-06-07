@@ -87,23 +87,13 @@ const TradeDetails = () => {
     { key: "closeDate", label: "Close Date", type: "date", inputClass: "w-40" },
     { key: "closePrice", label: "Close Price", type: "number", inputClass: "w-24" },
     { key: "daysTraded", label: "Days Traded", type: "daysTraded" },
-    { key: "assetValue", label: "Asset Current Value", type: "number", inputClass: "w-24" },
     { key: "wnl", label: "Won/Lost", type: "select", inputClass: "w-24", options: ["Won", "Lost", "Broke Even", "Pending"] },
     { key: "strategy", label: "Strategy", type: "select", inputClass: "w-24", options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2"] },
     { key: "note", label: "Note", type: "textarea", inputClass: "w-full" },
   ];
 
-  // Todo: continue refactoring to tickerNames.js
-  // const tickerNames = {
-  //   AAPL: "Apple Inc.",
-  //   TSLA: "Tesla Inc.",
-  //   GOOGL: "Alphabet Inc.",
-  //   AMZN: "Amazon.com Inc.",
-  // };
-
   if (!trade) return <div className="mt-20 text-center">Loading trade details...</div>;
 
-  // const companyName = tickerNames[trade.ticker] || "Unknown Company";
   const companyName = (tickerNames[trade.market] && tickerNames[trade.market][trade.ticker]) || "Unknown Company";
 
   const formatValue = (value, type) => {
@@ -164,44 +154,74 @@ const TradeDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         {/* Left side — 2/3 */}
         <div className="md:col-span-2 space-y-4">
-          {tradeFields.map(({ key, label, type, inputClass, transform, options }) => (
-            <div key={key} className="flex items-center justify-between">
-              <p className="font-semibold">{label}:</p>
-              <div className="flex items-center gap-2">
-                {editingField === key ? (
-                  <>
-                    {type === "select" ? (
-                      <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value || "")}>
-                        {options.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    ) : type === "textarea" ? (
-                      <textarea className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-                    ) : (
-                      <input
-                        type={type}
-                        className={`border rounded p-1 ${inputClass}`}
+          {tradeFields.map(({ key, label, type, inputClass, transform, options }) => {
+            if (key === "note") {
+              // Special rendering for the Note field
+              return (
+                <div key={key} className="flex flex-col gap-1 text-left">
+                  <label className="font-semibold text-left">{label}:</label>
+                  {editingField === key ? (
+                    <>
+                      <textarea
+                        className={`border rounded p-2 ${inputClass} w-full`}
                         value={tempValue}
-                        onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
+                        onChange={(e) => setTempValue(e.target.value)}
                       />
-                    )}
-                    <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
-                    <button onClick={handleCancel} className="text-xs text-gray-500">
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <span>{formatValue(trade[key], type, trade)}</span>
-                    <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
-                  </>
-                )}
+                      <div className="mt-1 flex gap-2 items-center">
+                        <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
+                        <button onClick={handleCancel} className="text-xs text-gray-500">
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="whitespace-pre-wrap">{formatValue(trade[key], type, trade)}</p>
+                      <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Default rendering for all other fields
+            return (
+              <div key={key} className="grid grid-cols-3 gap-4 items-center">
+                <p className="font-semibold text-left">{label}:</p>
+                <div className="col-span-2 flex items-center gap-2">
+                  {editingField === key ? (
+                    <>
+                      {type === "select" ? (
+                        <select className={`border rounded p-1 ${inputClass}`} value={tempValue} onChange={(e) => setTempValue(e.target.value || "")}>
+                          {options.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={type}
+                          className={`border rounded p-1 ${inputClass}`}
+                          value={tempValue}
+                          onChange={(e) => setTempValue(transform ? transform(e.target.value) : e.target.value)}
+                        />
+                      )}
+                      <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
+                      <button onClick={handleCancel} className="text-xs text-gray-500">
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{formatValue(trade[key], type, trade)}</span>
+                      <RoundIconButton onClick={() => handleEdit(key)} icon={PencilIcon} iconClassName="w-3 h-3" />
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Right side — 1/3 */}
