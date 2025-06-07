@@ -6,6 +6,8 @@ import { getTradeById, updateTrade, deleteTrade } from "../services/stockService
 import toast from "react-hot-toast";
 import Tooltip from "../components/Tooltip";
 import JournalEntries from "../components/JournalEntries";
+import tickerNames from "../assets/tickerNames";
+import TradeSummary from "../components/TradeSummary";
 
 const TradeDetails = () => {
   const { id } = useParams();
@@ -91,16 +93,18 @@ const TradeDetails = () => {
     { key: "note", label: "Note", type: "textarea", inputClass: "w-full" },
   ];
 
-  const tickerNames = {
-    AAPL: "Apple Inc.",
-    TSLA: "Tesla Inc.",
-    GOOGL: "Alphabet Inc.",
-    AMZN: "Amazon.com Inc.",
-  };
+  // Todo: continue refactoring to tickerNames.js
+  // const tickerNames = {
+  //   AAPL: "Apple Inc.",
+  //   TSLA: "Tesla Inc.",
+  //   GOOGL: "Alphabet Inc.",
+  //   AMZN: "Amazon.com Inc.",
+  // };
 
   if (!trade) return <div className="mt-20 text-center">Loading trade details...</div>;
 
-  const companyName = tickerNames[trade.ticker] || "Unknown Company";
+  // const companyName = tickerNames[trade.ticker] || "Unknown Company";
+  const companyName = (tickerNames[trade.market] && tickerNames[trade.market][trade.ticker]) || "Unknown Company";
 
   const formatValue = (value, type) => {
     if (type === "daysTraded") {
@@ -201,11 +205,13 @@ const TradeDetails = () => {
         </div>
 
         {/* Right side — 1/3 */}
+
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Extras</h3>
+          <TradeSummary trade={trade} />
+          {/* <h3 className="text-lg font-semibold">Extras - Sample widget</h3> 
           <div className="p-4 border rounded bg-gray-50 shadow-sm">
             <p className="text-sm text-gray-600">Add new widgets or components here — e.g. JournalEntries, trade notes, analytics, charts etc.</p>
-          </div>
+          </div> */}
 
           <JournalEntries tradeId={trade._id} />
         </div>
