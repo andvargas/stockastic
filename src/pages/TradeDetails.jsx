@@ -8,6 +8,9 @@ import Tooltip from "../components/Tooltip";
 import JournalEntries from "../components/JournalEntries";
 import tickerNames from "../assets/tickerNames";
 import TradeSummary from "../components/TradeSummary";
+import AdjustmentsWidget from "../components/AdjustmentsWidget";
+
+// todo: add a button to recalculate P/L
 
 const TradeDetails = () => {
   const { id } = useParams();
@@ -111,11 +114,6 @@ const TradeDetails = () => {
   };
 
   // toDo: Make this two columns, add some style
-  {
-    {
-      console.log(trade);
-    }
-  }
 
   const handleDelete = async () => {
     try {
@@ -234,6 +232,7 @@ const TradeDetails = () => {
           </div> */}
 
           <JournalEntries tradeId={trade._id} />
+          <AdjustmentsWidget tradeId={trade._id} />
         </div>
       </div>
 

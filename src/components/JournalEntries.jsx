@@ -13,7 +13,6 @@ const JournalEntries = ({ tradeId }) => {
     const fetchEntries = async () => {
       try {
         const res = await api.get(`/journal/trade/${tradeId}`);
-        console.log("Entries fetched:", res.data);
         setEntries(res.data);
       } catch (error) {
         console.error("Error fetching journal entries:", error);
