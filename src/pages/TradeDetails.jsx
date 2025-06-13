@@ -71,6 +71,7 @@ const TradeDetails = () => {
     { key: "ticker", label: "Ticker", type: "text", inputClass: "w-24", transform: (v) => v.toUpperCase() },
     { key: "market", label: "Market", type: "text", inputClass: "w-24" },
     { key: "quantity", label: "Quantity", type: "number", inputClass: "w-24" },
+    { key: "currency", label: "Currency", type: "select", inputClass: "w-24", options: ["GBP", "GBX", "USD", "EUR"] },
     { key: "entryPrice", label: "Entry Price", type: "number", inputClass: "w-24" },
     { key: "date", label: "Entry Date", type: "date", inputClass: "w-40" },
     { key: "stopLoss", label: "Stop Loss", type: "number", inputClass: "w-24" },
@@ -127,7 +128,7 @@ const TradeDetails = () => {
   };
 
   return (
-    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-5xl mx-auto p-6 bg-white rounded-md shadow--light-xl mt-20">
+    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-5xl mx-auto p-6 bg-white rounded-md shadow--light-xl my-20">
       {/* Nav */}
       <div className="flex items-center justify-between mb-6 shadow-xs pb-3">
         <h1 className="text-2xl font-bold">Trade Details</h1>
