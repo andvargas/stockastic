@@ -45,21 +45,22 @@ const TradeSummary = ({ trade }) => {
     }
   }, [trade]);
 
-  const totalAdjustments = adjustments.reduce((sum, adj) => sum + adj.amount, 0); // in GBP
-
-  const tradeRate = currencyRates[trade.currency] || 1;
-
-  const priceDifference = currentPrice - trade.entryPrice;
-  const grossProfit = priceDifference * trade.quantity * tradeRate;
-
-  // Days Open: use closeDate for closed trades, else today
+  // Days open / held calculation
   const endDate = trade.status === "Open" ? dayjs() : dayjs(trade.closeDate);
   const daysPassed = endDate.diff(dayjs(trade.date), "day");
 
-  const overnightInterestTotal = trade.overnightInterest * daysPassed; // already in GBP
+  // Currency conversion rate (to GBP base)
+  const tradeRate = currencyRates[trade.currency] || 1;
 
-  // Net profit: gross profit + adjustments - overnight interest
-  const netProfit = grossProfit + totalAdjustments - overnightInterestTotal;
+  // Adjusted values depending on trade status:
+  const totalAdjustments = trade.status === "Open" ? adjustments.reduce((sum, adj) => sum + adj.amount, 0) : trade.adjustmentsTotal || 0;
+
+  const overnightInterestTotal = trade.status === "Open" ? trade.overnightInterest * daysPassed : trade.overnightInterestTotal || 0;
+
+  const grossProfit = trade.status === "Open" ? (currentPrice - trade.entryPrice) * trade.quantity * tradeRate : trade.pnl || 0;
+
+  // Net profit = gross + adjustments - overnight interest
+  const netProfit = trade.status === "Open" ? grossProfit + totalAdjustments - overnightInterestTotal : trade.netProfit || 0;
 
   return (
     <div className="bg-white border rounded p-4 shadow-sm">
@@ -74,9 +75,10 @@ const TradeSummary = ({ trade }) => {
 
       <p className="font-medium">Gross Profit: £{grossProfit.toFixed(2)}</p>
       <p>Adjustments Total: £{totalAdjustments.toFixed(2)}</p>
-      <p>Overnight Interest Total: £{overnightInterestTotal.toFixed(2)}</p>
-
-      <p className={`font-bold text-lg mt-4 ${netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>Net Profit: £{netProfit.toFixed(2)}</p>
+      <p>Overnight Interest Total: £{overnightInterestTotal.toFixed(2) | overnightInterestTotal}</p>
+      <p className={`font-bold text-lg mt-4 ${netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+        Net Profit: £{typeof netProfit === "number" ? netProfit.toFixed(2) : netProfit}
+      </p>
     </div>
   );
 };

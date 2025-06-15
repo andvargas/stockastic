@@ -205,5 +205,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-// todo: onClose is not working

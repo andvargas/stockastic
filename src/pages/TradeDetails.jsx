@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilIcon, Save, Trash, CircleArrowLeft } from "lucide-react";
+import { PencilIcon, Save, Trash, CircleArrowLeft, CircleX } from "lucide-react";
 import RoundIconButton from "../components/RoundIconButton";
 import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
 import toast from "react-hot-toast";
@@ -9,6 +9,8 @@ import JournalEntries from "../components/JournalEntries";
 import tickerNames from "../assets/tickerNames";
 import TradeSummary from "../components/TradeSummary";
 import AdjustmentsWidget from "../components/AdjustmentsWidget";
+import CloseTradeForm from "../components/CloseTradeForm";
+import dayjs from "dayjs";
 
 // todo: add a button to recalculate P/L
 
@@ -17,27 +19,35 @@ const TradeDetails = () => {
   const navigate = useNavigate();
 
   const [trade, setTrade] = useState(null);
-
   const [editingField, setEditingField] = useState(null);
   const [tempValue, setTempValue] = useState("");
+  const [showCloseTradeModal, setShowCloseTradeModal] = useState(false);
+
+  const handleCloseTrade = () => {
+    setShowCloseTradeModal(true);
+  };
+
+  const fetchTrade = async () => {
+    try {
+      const data = await getTradeById(id);
+      setTrade(data);
+    } catch (err) {
+      console.error("Error fetching trade:", err);
+      toast.error("Failed to fetch trade details.");
+    }
+  };
 
   useEffect(() => {
-    const fetchTrade = async () => {
-      try {
-        const data = await getTradeById(id);
-        setTrade(data);
-      } catch (err) {
-        console.error("Error fetching trade:", err);
-        toast.error("Failed to fetch trade details.");
-      }
-    };
-
     fetchTrade();
   }, [id]);
 
   const handleSave = async () => {
     try {
-      const valueToSave = tempValue !== "" ? tempValue : trade[editingField];
+      let valueToSave = tempValue !== "" ? tempValue : trade[editingField];
+
+      if (editingField === "closeDate" || editingField === "date") {
+        valueToSave = new Date(valueToSave).toISOString();
+      }
       const updatedField = { [editingField]: valueToSave };
 
       await updateTrade(id, updatedField);
@@ -87,6 +97,7 @@ const TradeDetails = () => {
     { key: "assetType", label: "Asset Type", type: "select", inputClass: "w-32", options: ["Real Money", "Paper Money", "CFD", "Paper CFD"] },
     { key: "atr", label: "ATR", type: "number", inputClass: "w-24" },
     { key: "pnl", label: "P/L", type: "number", inputClass: "w-24" },
+    { key: "netProfit", label: "Net P/L", type: "number", inputClass: "w-24" },
     { key: "overnightInterest", label: "Overnight Interest", type: "number", inputClass: "w-24" },
     { key: "closeDate", label: "Close Date", type: "date", inputClass: "w-40" },
     { key: "closePrice", label: "Close Price", type: "number", inputClass: "w-24" },
@@ -101,16 +112,29 @@ const TradeDetails = () => {
   const companyName = (tickerNames[trade.market] && tickerNames[trade.market][trade.ticker]) || "Unknown Company";
 
   const formatValue = (value, type) => {
+    // Use dayjs for the "daysTraded" calculation
     if (type === "daysTraded") {
-      const start = new Date(trade.date);
-      const end = trade.closedDate ? new Date(trade.closedDate) : new Date();
-      const diffTime = end - start;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // Ensure the dates are valid before processing
+      if (!trade.date) return "-";
+
+      const startDate = dayjs(trade.date);
+      // Use the current date if the trade is still open
+      const endDate = trade.closeDate ? dayjs(trade.closeDate) : dayjs();
+
+      // dayjs' .diff() method is perfect for this
+      const diffDays = endDate.diff(startDate, "day");
+
       return `${diffDays} day${diffDays !== 1 ? "s" : ""}`;
     }
 
+    // Use dayjs for date formatting
+    if (type === "date") {
+      if (!value) return "-";
+      // Use the .format() method for consistent, readable dates
+      return dayjs(value).format("DD MMM YYYY"); // e.g., "14 Jun 2025"
+    }
+
     if (!value) return "-";
-    if (type === "date") return new Date(value).toLocaleDateString();
     return value;
   };
 
@@ -128,7 +152,7 @@ const TradeDetails = () => {
   };
 
   return (
-    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-5xl mx-auto p-6 bg-white rounded-md shadow--light-xl my-20">
+    <div style={{ boxShadow: "var(--shadow-light-xl)" }} className="max-w-5xl mx-auto p-6 bg-white rounded-md shadow--light-xl my-5">
       {/* Nav */}
       <div className="flex items-center justify-between mb-6 shadow-xs pb-3">
         <h1 className="text-2xl font-bold">Trade Details</h1>
@@ -140,6 +164,9 @@ const TradeDetails = () => {
               color="bg-gray-100 hover:bg-gray-300"
               iconClassName="w-8 h-8 text-blue-700"
             />
+          </Tooltip>
+          <Tooltip tooltipText="Close this trade" position="bottom">
+            <RoundIconButton onClick={handleCloseTrade} icon={CircleX} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-black" />
           </Tooltip>
           <Tooltip tooltipText="Delete share..." position="bottom">
             <RoundIconButton onClick={handleDelete} icon={Trash} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-red-700" />
@@ -186,6 +213,14 @@ const TradeDetails = () => {
             // Default rendering for all other fields
             return (
               <div key={key} className="grid grid-cols-3 gap-4 items-center">
+                <CloseTradeForm
+                  isOpen={showCloseTradeModal}
+                  onClose={() => setShowCloseTradeModal(false)}
+                  trade={trade}
+                  onSuccess={() => {
+                    fetchTrade();
+                  }}
+                />
                 <p className="font-semibold text-left">{label}:</p>
                 <div className="col-span-2 flex items-center gap-2">
                   {editingField === key ? (
