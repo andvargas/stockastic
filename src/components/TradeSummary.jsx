@@ -57,7 +57,12 @@ const TradeSummary = ({ trade }) => {
 
   const overnightInterestTotal = trade.status === "Open" ? trade.overnightInterest * daysPassed : trade.overnightInterestTotal || 0;
 
-  const grossProfit = trade.status === "Open" ? (currentPrice - trade.entryPrice) * trade.quantity * tradeRate : trade.pnl || 0;
+  const grossProfit =
+    trade.status === "Open"
+      ? (currentPrice - trade.entryPrice) * trade.quantity * tradeRate
+      : trade.pnl !== undefined && trade.pnl !== null
+      ? trade.pnl
+      : 0;
 
   // Net profit = gross + adjustments - overnight interest
   const netProfit = trade.status === "Open" ? grossProfit + totalAdjustments - overnightInterestTotal : trade.netProfit || 0;
@@ -73,9 +78,9 @@ const TradeSummary = ({ trade }) => {
 
       <p>Days Open: {daysPassed}</p>
 
-      <p className="font-medium">Gross Profit: £{grossProfit.toFixed(2)}</p>
+      <p className="font-medium">Gross Profit: £{grossProfit !== null && grossProfit !== undefined ? grossProfit.toFixed(2) : "0.00"}</p>
       <p>Adjustments Total: £{totalAdjustments.toFixed(2)}</p>
-      <p>Overnight Interest Total: £{overnightInterestTotal.toFixed(2) | overnightInterestTotal}</p>
+      <p>Overnight Interest Total: £{overnightInterestTotal.toFixed(2)}</p>
       <p className={`font-bold text-lg mt-4 ${netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
         Net Profit: £{typeof netProfit === "number" ? netProfit.toFixed(2) : netProfit}
       </p>

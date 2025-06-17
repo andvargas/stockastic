@@ -45,6 +45,14 @@ const TradeDetails = () => {
     try {
       let valueToSave = tempValue !== "" ? tempValue : trade[editingField];
 
+      // Find the definition for the field being edited
+      const fieldDefinition = tradeFields.find((f) => f.key === editingField);
+      // In number, parse back to number
+      if (fieldDefinition && fieldDefinition.type === "number") {
+        // Use parseFloat to handle decimals. Default to 0 if parsing fails (e.g., empty string)
+        valueToSave = parseFloat(valueToSave) || 0;
+      }
+
       if (editingField === "closeDate" || editingField === "date") {
         valueToSave = new Date(valueToSave).toISOString();
       }

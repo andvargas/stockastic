@@ -8,16 +8,13 @@ import * as Yup from "yup";
 const CloseTradeForm = ({ isOpen, onClose, trade, onSuccess }) => {
   const initialValues = {
     closePrice: "",
-    closeDate: dayjs().format("YYYY-MM-DD")
+    closeDate: dayjs().format("YYYY-MM-DD"),
+    pnl: "",
   };
 
   const validationSchema = Yup.object({
-    closePrice: Yup.number()
-      .typeError("Close price must be a number")
-      .positive("Close price must be positive")
-      .required("Close price is required"),
-    closeDate: Yup.date()
-      .required("Close date is required"),
+    closePrice: Yup.number().typeError("Close price must be a number").positive("Close price must be positive").required("Close price is required"),
+    closeDate: Yup.date().required("Close date is required"),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
@@ -29,7 +26,7 @@ const CloseTradeForm = ({ isOpen, onClose, trade, onSuccess }) => {
         tradeId: trade._id,
         closePrice: parseFloat(values.closePrice),
         closeDate: closeDate, // Send the standardized date
-        // pnl: if there is a value in the field when submitting, sends that, otherwise keeps the old value
+        pnl: values.pnl !== "" ? parseFloat(values.pnl) : "",
       });
       onSuccess();
       onClose();
@@ -42,47 +39,37 @@ const CloseTradeForm = ({ isOpen, onClose, trade, onSuccess }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Close Trade: ${trade.ticker}`}>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
+      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
         {({ isSubmitting }) => (
           <Form className="space-y-4">
             <div>
               <label className="block text-sm mb-1">Close Price</label>
-              <Field
-                type="number"
-                step="0.01"
-                name="closePrice"
-                className="w-full border rounded p-2"
-              />
+              <Field type="number" step="0.01" name="closePrice" className="w-full border rounded p-2" />
               <ErrorMessage name="closePrice" component="div" className="text-red-500 text-sm" />
             </div>
 
             <div>
               <label className="block text-sm mb-1">Close Date</label>
-              <Field
-                type="date"
-                name="closeDate"
-                className="w-full border rounded p-2"
-              />
+              <Field type="date" name="closeDate" className="w-full border rounded p-2" />
               <ErrorMessage name="closeDate" component="div" className="text-red-500 text-sm" />
             </div>
 
+            <div>
+              <label className="block text-sm mb-1">Gross Profit (optional)</label>
+              <Field
+                type="number"
+                step="0.01"
+                name="pnl"
+                placeholder="Add gross profit or leave empty to calculate"
+                className="w-full border rounded p-2"
+              />
+            </div>
+
             <div className="flex justify-end space-x-2 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border rounded"
-              >
+              <button type="button" onClick={onClose} className="px-4 py-2 border rounded">
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
+              <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white rounded">
                 {isSubmitting ? "Closing..." : "Close Trade"}
               </button>
             </div>
