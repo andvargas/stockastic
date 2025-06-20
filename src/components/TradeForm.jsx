@@ -92,6 +92,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="NASDAQ">NASDAQ</option>
                   <option value="ETR">XETRA(ETR)</option>
                   <option value="EPA">Euronext Paris(EPA)</option>
+                  <option value="WBAG">Wiener Börse(WBAG)</option>
                 </Field>
                 <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
               </div>

@@ -23,6 +23,7 @@ const tickerNames = {
     SMIN: "Smiths Group plc",
     SMT: "Scottish Mortgage Investment Trust PLC",
     CCL: "Carnival plc",
+    IMB: "Imperial Brands",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -52,6 +53,9 @@ const tickerNames = {
   },
   ETR: {
     LHA: "Deutsche Lufthansa",
+  },
+  WBAG: {
+    OMVV: "OMV",
   },
 };
 
