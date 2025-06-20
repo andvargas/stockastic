@@ -99,7 +99,7 @@ const TradeDetails = () => {
       label: "Status",
       type: "select",
       inputClass: "w-32",
-      options: ["Open", "Closed"],
+      options: ["Open", "Closed", "Considering"],
     },
     { key: "type", label: "Transaction Type", type: "select", inputClass: "w-32", options: ["Long", "Short", "PaperMoney Long", "PaperMoney Short"] },
     { key: "assetType", label: "Asset Type", type: "select", inputClass: "w-32", options: ["Real Money", "Paper Money", "CFD", "Paper CFD"] },

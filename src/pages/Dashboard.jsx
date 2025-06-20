@@ -9,6 +9,7 @@ import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon } from "lucide-react";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([]);
@@ -137,11 +138,11 @@ const Dashboard = () => {
                         {trade.type}
                       </span>
                       <span>
-                        {trade.quantity} @ £{trade.entryPrice}
+                        {trade.quantity} @ {formatCurrency(trade.entryPrice, trade.currency)}
                       </span>
                     </td>
                     <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
-                    <td className="border-b p-2">£{trade.stopLoss}</td>
+                    <td className="border-b p-2">{formatCurrency(trade.stopLoss, trade.currency)}</td>
                     {/* <td className="border-b p-2">£{trade.takeProfit}</td> */}
                     <td className={trade.wnl === "Broke Even" ? "bg-gray-100 border-b p-2" : "border-b p-2"}>
                       {trade.wnl === "Broke Even" ? (
