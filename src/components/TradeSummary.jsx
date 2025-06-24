@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import dayjs from "dayjs";
 import currencyRates from "../utils/currencyRates";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const TradeSummary = ({ trade }) => {
   const [adjustments, setAdjustments] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(null);
   const [manualPrice, setManualPrice] = useState(null);
+  const [highestClosePrice, setHighestClosePrice] = useState(trade.highestClosePrice || null);
 
   const fetchAdjustments = async () => {
     try {
@@ -27,10 +29,20 @@ const TradeSummary = ({ trade }) => {
     }
   };
 
+  const fetchManualPrice = async () => {
+    try {
+      const res = await api.get(`/trades/${trade._id}`);
+      setManualPrice(res.data.manualCurrentPrice || null);
+    } catch (err) {
+      console.error("Error fetching manual price:", err);
+    }
+  };
+
   const refreshData = () => {
     fetchAdjustments();
     if (trade.status === "Open") {
       fetchCurrentPrice();
+      fetchManualPrice();
     } else {
       setCurrentPrice(trade.closePrice);
     }
@@ -60,10 +72,21 @@ const TradeSummary = ({ trade }) => {
 
   const netProfit = trade.status === "Open" ? grossProfit + totalAdjustments - overnightInterestTotal : trade.netProfit || 0;
 
-  const handleSetManualPrice = () => {
+  const handleSetManualPrice = async () => {
     const input = prompt("Enter current price:");
     if (input && !isNaN(input)) {
-      setManualPrice(parseFloat(input));
+      const parsedPrice = parseFloat(input);
+      setManualPrice(parsedPrice);
+      await api.post(`/trades/${trade._id}/set-manual-price`, { price: parsedPrice });
+    }
+  };
+
+  const handleSetHighestClosePrice = async () => {
+    const input = prompt("Enter highest close price (on 15 min. timeframe):");
+    if (input && !isNaN(input)) {
+      const parsedPrice = parseFloat(input);
+      await api.post(`/trades/${trade._id}/set-highest-close-price`, { highestPrice: parsedPrice });
+      setHighestClosePrice(parsedPrice);
     }
   };
 
@@ -71,10 +94,10 @@ const TradeSummary = ({ trade }) => {
     <div className="bg-white border rounded p-4 shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Trade Summary</h2>
 
-      <div className="flex items-center gap-3">
+      <div className="gap-3">
         <p>
           {trade.status === "Open" ? "Current Price: " : "Closed Price: "}
-          {trade.currency} {effectivePrice !== null ? effectivePrice : "Not available"}
+          {effectivePrice !== null ? formatCurrency(effectivePrice, trade.currency) : "Not available"}
         </p>
         {trade.status === "Open" && (
           <button onClick={handleSetManualPrice} className="px-2 py-0.5 border rounded text-sm hover:bg-gray-200">
@@ -82,6 +105,12 @@ const TradeSummary = ({ trade }) => {
           </button>
         )}
       </div>
+      <p>Highest Close Price: {highestClosePrice ? formatCurrency(highestClosePrice, trade.currency) : "Not set"}</p>
+      {trade.status === "Open" && (
+        <button onClick={handleSetHighestClosePrice} className="px-2 py-0.5 border rounded text-sm hover:bg-gray-200">
+          Set Highest Close Price
+        </button>
+      )}
 
       <p>Days Open: {daysPassed}</p>
       <p className="font-medium">Gross Profit: £{typeof grossProfit === "number" ? grossProfit.toFixed(2) : "0.00"}</p>
