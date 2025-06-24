@@ -8,7 +8,7 @@ import Tooltip from "../components/Tooltip";
 import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
-import { RadarIcon } from "lucide-react";
+import { RadarIcon, CoinsIcon, BanknoteIcon } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
 
 const Dashboard = () => {
@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [selectedTradeId, setSelectedTradeId] = useState(null);
   const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [accountTypeFilter, setAccountTypeFilter] = useState(null);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -30,10 +31,6 @@ const Dashboard = () => {
 
     fetchTrades();
   }, []);
-
-  const totalTrades = trades.length;
-  const openPositions = trades.filter((trade) => trade.status === "Open").length;
-  const totalPL = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
 
   const handleAddTrade = async (newTrade) => {
     try {
@@ -68,15 +65,37 @@ const Dashboard = () => {
   // const filteredTrades = trades.filter((trade) => (showConsidering ? trade.status === "Considering" : trade.status !== "Considering"));
 
   const filteredTrades = trades.filter((trade) => {
-    // If showConsidering is on
     if (showConsidering) return trade.status === "Considering";
 
-    // If a status filter is applied
-    if (statusFilter) return trade.status === statusFilter;
+    if (statusFilter && trade.status !== statusFilter) return false;
 
-    // Otherwise, show everything (except considering if toggle is off)
+    // Map assetType to 'Real Money' or 'Paper Money'
+    if (accountTypeFilter) {
+      const isRealMoney = trade.assetType === "CFD" || trade.assetType === "Real Money";
+      const isPaperMoney = trade.assetType === "Paper Money" || trade.assetType === "Paper CFD";
+
+      if (accountTypeFilter === "Real Money" && !isRealMoney) return false;
+      if (accountTypeFilter === "Paper Money" && !isPaperMoney) return false;
+    }
+
     return trade.status !== "Considering";
   });
+
+  const totalTrades = filteredTrades.length;
+  const openPositions = filteredTrades.filter((trade) => trade.status === "Open").length;
+  const totalPL = filteredTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+
+  const setShowRealMoney = () => {
+    setAccountTypeFilter((prev) => (prev === "Real Money" ? null : "Real Money"));
+    setShowConsidering(false);
+  };
+
+  const setShowPaperMoney = () => {
+    setAccountTypeFilter((prev) => (prev === "Paper Money" ? null : "Paper Money"));
+    setShowConsidering(false);
+  };
+
+  const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -102,14 +121,32 @@ const Dashboard = () => {
         {/* Trade List */}
         <div className="bg-white rounded-xl p-6 shadow">
           <div className="flex justify-between items-center mb-4">
-            <span></span> {/* Empty placeholder */}
-            <h2 className="text-xl font-bold">{showConsidering ? "Potential Buys" : "Trades"}</h2>
-            <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Considering"}>
-              <RadarIcon
-                onClick={() => setShowConsidering(!showConsidering)}
-                className="h-6 w-6 cursor-pointer hover:text-lime-600 transition-colors duration-300"
-              />
-            </Tooltip>
+            <span className="w-24"></span> {/* Empty placeholder */}
+            <h2 className="text-xl font-bold">{showConsidering ? "Potential Buys" : `Trades ${titleModifier}`}</h2>
+            <div className="gap-4 flex items-center">
+              <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Real Money"}>
+                <BanknoteIcon
+                  onClick={() => setShowRealMoney()}
+                  className={`h-6 w-6 cursor-pointer transition-colors duration-300 ${
+                    accountTypeFilter === "Real Money" ? "text-lime-600" : "hover:text-lime-600"
+                  }`}
+                />
+              </Tooltip>
+              <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Paper Money"}>
+                <CoinsIcon
+                  onClick={() => setShowPaperMoney()}
+                  className={`h-6 w-6 cursor-pointer transition-colors duration-300 ${
+                    accountTypeFilter === "Paper Money" ? "text-lime-600" : "hover:text-lime-600"
+                  }`}
+                />
+              </Tooltip>
+              <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Considering"}>
+                <RadarIcon
+                  onClick={() => setShowConsidering(!showConsidering)}
+                  className="h-6 w-6 cursor-pointer hover:text-lime-600 transition-colors duration-300"
+                />
+              </Tooltip>
+            </div>
           </div>
 
           <table className="w-full text-left border-collapse">
