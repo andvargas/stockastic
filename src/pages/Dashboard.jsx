@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon, CoinsIcon, BanknoteIcon } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
+import Footer from "../components/Footer";
 
 const Dashboard = () => {
   const [trades, setTrades] = useState([]);
@@ -98,10 +99,13 @@ const Dashboard = () => {
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Stockastic Trading Dashboard</h1>
-
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-4">
+          <img src="/icons/icon-512.png" alt="Stockastic Logo" className="w-16 h-16 mb-2" />
+          <h1 className="text-3xl font-bold mb-6 text-center">Trading Dashboard</h1>
+          <span className="w-18"></span>
+        </div>
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 shadow text-center">
@@ -238,6 +242,7 @@ const Dashboard = () => {
           <TradeForm onAddTrade={handleAddTrade} onClose={() => setIsTradeModalOpen(false)} />
         </Modal>
       </div>
+      <Footer />
     </div>
   );
 };
