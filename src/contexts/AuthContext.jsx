@@ -8,7 +8,10 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -17,8 +20,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
-    setUser({ email: res.data.email, token: res.data.token });
-    localStorage.setItem("user", JSON.stringify({ email: res.data.email, token: res.data.token }));
+    const userData = { email: res.data.email, role: res.data.role, token: res.data.token };
+    setUser(res.data.user);
+    localStorage.setItem("user", JSON.stringify(res.data.user));
   };
 
   const register = async (email, password) => {

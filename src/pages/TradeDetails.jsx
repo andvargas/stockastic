@@ -11,12 +11,15 @@ import TradeSummary from "../components/TradeSummary";
 import AdjustmentsWidget from "../components/AdjustmentsWidget";
 import CloseTradeForm from "../components/CloseTradeForm";
 import dayjs from "dayjs";
+import { useAuth } from "../contexts/AuthContext";
+import { hasPermission } from "../utils/roleUtils";
 
 // todo: add a button to recalculate P/L
 
 const TradeDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [trade, setTrade] = useState(null);
   const [editingField, setEditingField] = useState(null);
@@ -24,6 +27,10 @@ const TradeDetails = () => {
   const [showCloseTradeModal, setShowCloseTradeModal] = useState(false);
 
   const handleCloseTrade = () => {
+    if (!hasPermission(user, ["admin", "trader"])) {
+      toast.error("You don't have permission to close trades.");
+      return;
+    }
     setShowCloseTradeModal(true);
   };
 
@@ -42,6 +49,10 @@ const TradeDetails = () => {
   }, [id]);
 
   const handleSave = async () => {
+    if (!hasPermission(user, ["admin", "trader"])) {
+      toast.error("You don't have permission to edit trades.");
+      return;
+    }
     try {
       let valueToSave = tempValue !== "" ? tempValue : trade[editingField];
 
@@ -149,6 +160,10 @@ const TradeDetails = () => {
   // toDo: Make this two columns, add some style
 
   const handleDelete = async () => {
+    if (!hasPermission(user, ["admin", "trader"])) {
+      toast.error("You don't have permission to delete trades.");
+      return;
+    }
     try {
       await deleteTrade(id);
       toast.success("Trade deleted successfully");

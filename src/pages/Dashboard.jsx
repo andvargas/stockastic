@@ -11,14 +11,19 @@ import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon, CoinsIcon, BanknoteIcon } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
 import Footer from "../components/Footer";
+import { useAuth } from "../contexts/AuthContext";
+import { hasPermission } from "../utils/roleUtils";
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
   const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [accountTypeFilter, setAccountTypeFilter] = useState(null);
+
+  console.log(user);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -230,13 +235,17 @@ const Dashboard = () => {
           </table>
         </div>
 
-        {/* Add Trade Button */}
-        <button
-          onClick={() => setIsTradeModalOpen(true)}
-          className="bg-cyan-700 text-white px-4 py-2 rounded-lg mt-8 hover:bg-cyan-400 transition-colors duration-300"
-        >
-          Add Trade
-        </button>
+        {/* Disable Trade Button for Viewers */}
+        <Tooltip tooltipText="Only traders and admins can add trades">
+          <button
+            onClick={() => hasPermission(user, ["admin", "trader"]) && setIsTradeModalOpen(true)}
+            disabled={!hasPermission(user, ["admin", "trader"])}
+            className={`px-4 py-2 rounded-lg mt-8 transition-colors duration-300 
+    ${hasPermission(user, ["admin", "trader"]) ? "bg-cyan-700 text-white hover:bg-cyan-400" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+          >
+            Add Trade
+          </button>
+        </Tooltip>
 
         <Modal isOpen={isTradeModalOpen} onClose={() => setIsTradeModalOpen(false)} title="Add New Trade">
           <TradeForm onAddTrade={handleAddTrade} onClose={() => setIsTradeModalOpen(false)} />
