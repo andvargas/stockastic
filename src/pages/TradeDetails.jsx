@@ -295,7 +295,10 @@ const TradeDetails = () => {
         </div>
       </div>
 
-      <button onClick={() => navigate(-1)} className="mt-8 bg-gray-300 hover:bg-gray-400 text-sm px-4 py-2 rounded">
+      <button
+        onClick={() => navigate(-1)}
+        className="px-4 py-2 rounded-lg mt-8 transition-colors duration-300 bg-cyan-700 text-white hover:bg-cyan-400"
+      >
         ← Back to Dashboard
       </button>
     </div>

@@ -8,13 +8,17 @@
   box-sizing: border-box;
 }
 
+/* App height layout fix */
+html, body, #root {
+  @apply h-full m-0 flex flex-col;
+}
+
+/* Global variables and font rendering */
 :root {
-  min-height: 100vh;
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
-  background-image: radial-gradient(ellipse at top left, #014848, #00312F);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -22,11 +26,13 @@
   -webkit-text-size-adjust: 100%;
 }
 
+/* Background and default text styles */
 body {
-  margin: 0;
-  text-align: center;
-  color: #68666c;
+  @apply text-center text-gray-600 bg-gray-100;
+  /* background-image: radial-gradient(ellipse at top left, #014848, #00312F); */
 }
+
+/* Modal overlay */
 .modal-backdrop {
   background-color: rgba(0,0,0,0.5);
 }
