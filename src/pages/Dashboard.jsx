@@ -10,7 +10,6 @@ import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon, CoinsIcon, BanknoteIcon } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
-import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
 
@@ -251,7 +250,6 @@ const Dashboard = () => {
           <TradeForm onAddTrade={handleAddTrade} onClose={() => setIsTradeModalOpen(false)} />
         </Modal>
       </div>
-      <Footer />
     </div>
   );
 };
