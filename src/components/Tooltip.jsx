@@ -11,6 +11,7 @@ const Tooltip = ({ children, tooltipText, position = "top", showOnLoadDuration =
   };
 
   useEffect(() => {
+    console.log("Tooltip loaded — showOnLoadDuration:", showOnLoadDuration);
     if (typeof showOnLoadDuration === "number" && showOnLoadDuration > 0) {
       setShowOnLoad(true);
       const timer = setTimeout(() => {
