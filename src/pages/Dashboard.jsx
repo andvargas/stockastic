@@ -172,8 +172,8 @@ const Dashboard = () => {
                 </th>
                 <th className="border-b p-2">Entry type/nr/price</th>
                 <th className="border-b p-2">Date</th>
-                <th className="border-b p-2">Stop Loss</th>
-                <th className="border-b p-2">
+                <th className="border-b p-2 hidden md:table-cell">Stop Loss</th>
+                <th className="border-b p-2 hidden md:table-cell">
                   <div>
                     Take Profit
                     <Tooltip tooltipText={"Displays BE (Break Even); changes to Take Profit when price exceeds it."}>
@@ -183,8 +183,8 @@ const Dashboard = () => {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="border-b p-2">Status</th>
-                <th className="border-b p-2">Notes</th>
+                <th className="border-b p-2 hidden md:table-cell">Status</th>
+                <th className="border-b p-2 hidden md:table-cell">Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -213,9 +213,8 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
-                    <td className="border-b p-2">{formatCurrency(trade.stopLoss, trade.currency)}</td>
-                    {/* <td className="border-b p-2">£{trade.takeProfit}</td> */}
-                    <td className={trade.wnl === "Broke Even" ? "bg-gray-100 border-b p-2" : "border-b p-2"}>
+                    <td className="border-b p-2 hidden md:table-cell">{formatCurrency(trade.stopLoss, trade.currency)}</td>
+                    <td className={`border-b p-2 hidden md:table-cell ${trade.wnl === "Broke Even" ? "bg-gray-100" : ""}`}>
                       {trade.wnl === "Broke Even" ? (
                         trade.takeProfit
                       ) : (
@@ -224,14 +223,7 @@ const Dashboard = () => {
                         </Tooltip>
                       )}
                     </td>
-                    <td className="border-b p-2">
-                      {/* <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
-                          trade.status === "Open" ? "bg-blue-500" : "bg-gray-500"
-                        }`}
-                      >
-                        {trade.status}
-                      </span> */}
+                    <td className="border-b p-2 hidden md:table-cell">
                       <button
                         onClick={() => setStatusFilter((prev) => (prev === trade.status ? null : trade.status))}
                         className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
@@ -241,7 +233,7 @@ const Dashboard = () => {
                         {trade.status}
                       </button>
                     </td>
-                    <td className="border-b p-2">
+                    <td className="border-b p-2 hidden md:table-cell">
                       <button
                         onClick={() => openJournalModal(trade._id)}
                         className="bg-cyan-700 px-2 py-0.5 rounded-full text-xs font-medium text-white hover:bg-cyan-400 transition-colors duration-300"
