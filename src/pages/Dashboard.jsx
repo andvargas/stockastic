@@ -8,7 +8,7 @@ import Tooltip from "../components/Tooltip";
 import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
-import { RadarIcon, CoinsIcon, BanknoteIcon } from "lucide-react";
+import { RadarIcon, CoinsIcon, BanknoteIcon, Info } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [accountTypeFilter, setAccountTypeFilter] = useState(null);
 
-  console.log(user);
+  console.log(trades[9]);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -160,11 +160,29 @@ const Dashboard = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
-                <th className="border-b p-2">Ticker</th>
-                <th className="border-b p-2">Entry</th>
+                <th className="border-b p-2">
+                  <div className="flex items-center gap-1">
+                    Ticker
+                    <Tooltip tooltipText={"Click the ticker name to see the details."} showOnLoadDuration={5000}>
+                      <sup>
+                        <Info className="inline cursor-pointer" size="16" />
+                      </sup>
+                    </Tooltip>
+                  </div>
+                </th>
+                <th className="border-b p-2">Entry type/nr/price</th>
                 <th className="border-b p-2">Date</th>
                 <th className="border-b p-2">Stop Loss</th>
-                <th className="border-b p-2">Take Profit</th>
+                <th className="border-b p-2">
+                  <div>
+                    Take Profit
+                    <Tooltip tooltipText={"Displays BE (Break Even); changes to Take Profit when price exceeds it."}>
+                      <sup>
+                        <Info className="inline cursor-pointer" size="16" />
+                      </sup>
+                    </Tooltip>
+                  </div>
+                </th>
                 <th className="border-b p-2">Status</th>
                 <th className="border-b p-2">Notes</th>
               </tr>
@@ -174,7 +192,15 @@ const Dashboard = () => {
                 filteredTrades.map((trade) => (
                   <tr key={trade._id} className={trade.wnl === "Broke Even" ? "bg-gray-100" : ""}>
                     <td className="border-b p-2">
-                      <Link to={`/trade/${trade._id}`}>{trade.ticker}</Link>
+                      <Link
+                        to={`/trade/${trade._id}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white 
+      ${
+        trade.wnl === "Broke Even" ? "bg-gray-500" : trade.wnl === "Won" ? "bg-green-600" : trade.wnl === "Lost" ? "bg-red-500" : "bg-blue-500"
+      } hover:opacity-80 transition`}
+                      >
+                        {trade.ticker}
+                      </Link>
                     </td>
                     <td className="border-b p-2 flex items-center gap-2">
                       <span
