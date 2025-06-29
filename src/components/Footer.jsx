@@ -28,7 +28,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="w-full bg-cyan-700 text-white border-t border-gray-300 text-sm flex justify-center items-center h-14">
+    <footer className="w-full bg-cyan-700 text-white border-t border-gray-300 text-sm flex justify-center items-center h-20">
       <div className="flex flex-col sm:flex-row justify-center py-4 items-center gap-4">
         <span>
           © {new Date().getFullYear()} Stockastic v{import.meta.env.PACKAGE_VERSION}. All rights reserved.

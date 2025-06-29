@@ -103,7 +103,7 @@ const Dashboard = () => {
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-[95vh] bg-gray-100">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-4">
           <img src="/icons/icon-512.png" alt="Stockastic Logo" className="w-16 h-16 mb-2" />
