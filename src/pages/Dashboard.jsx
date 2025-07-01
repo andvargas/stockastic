@@ -122,7 +122,9 @@ const Dashboard = () => {
           </div>
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Total P/L</h2>
-            <p className={`text-2xl font-semibold ${totalPL >= 0 ? "text-green-500" : "text-red-500"}`}>£{totalPL.toLocaleString()}</p>
+            <p className={`text-2xl font-semibold ${totalPL >= 0 ? "text-green-500" : "text-red-500"}`}>
+              £{totalPL.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
           </div>
         </div>
 
