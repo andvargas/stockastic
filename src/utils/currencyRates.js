@@ -3,7 +3,7 @@ const currencyRates = {
   GBP: 1,
   GBX: 0.01,
   USD: 0.74,
-  EUR: 0.85,
+  EUR: 0.86,
 };
 
 export default currencyRates;

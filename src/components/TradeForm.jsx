@@ -15,7 +15,7 @@ const tradeSchema = Yup.object().shape({
   stopLoss: Yup.number().nullable(),
   takeProfit: Yup.number().nullable(),
   type: Yup.string().oneOf(["Long", "Short"]).required("Type is required"),
-  assetType: Yup.string().oneOf(["pm", "rm", "cfd", "paperCfd"]).required("Asset type is required"),
+  assetType: Yup.string().oneOf(["Paper Money", "Real Money", "CFD", "Paper CFD"]).required("Asset type is required"),
   status: Yup.string().oneOf(["Open", "Closed", "Considering"]).required("Status is required"),
   atr: Yup.number().nullable(),
 });
@@ -58,7 +58,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         stopLoss: "",
         takeProfit: "",
         type: "Long",
-        assetType: "pm",
+        assetType: "Real Money",
         status: "Open",
         atr: "",
         overnightInterest: "",
@@ -202,11 +202,6 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                 <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
               </div>
             </div>
-
-            {/* <div> //don't need this, because there is a journal system implemented
-              <label>Note</label>
-              <Field as="textarea" name="note" className="border p-2 w-full" />
-            </div> */}
 
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
               Add Trade
