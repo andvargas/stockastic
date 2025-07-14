@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import currencyRates from "../utils/currencyRates";
 
 const avgSL = 1.56;
 const avgTP = 3.54;
@@ -20,12 +21,6 @@ const tradeSchema = Yup.object().shape({
   atr: Yup.number().nullable(),
 });
 
-const currencyRatesToGBP = {
-  GBX: 0.01,
-  USD: 0.75,
-  GBP: 1,
-};
-
 const TradeForm = ({ onAddTrade, onClose }) => {
   const calculateTradeLevels = (setFieldValue, values, field, value) => {
     const atrValue = field === "atr" ? parseFloat(value) : parseFloat(values.atr);
@@ -39,7 +34,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
       setFieldValue("takeProfit", takeProfit);
     }
     if (!isNaN(atrValue)) {
-      const currencyRate = currencyRatesToGBP[values.currency] || 1; // default 1 if unknown
+      const currencyRate = currencyRates[values.currency] || 1;
       const riskPerUnitGBP = avgSL * atrValue * currencyRate;
       const quantity = Math.floor(accRiskTrade / riskPerUnitGBP);
       setFieldValue("quantity", quantity);
@@ -76,8 +71,10 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         useEffect(() => {
           if (values.market === "LON") {
             setFieldValue("currency", "GBX");
-          } else if (values.market === "NASDAQ" || values.market === "NYSE") {
+          } else if (["NASDAQ", "NYSE"].includes(values.market)) {
             setFieldValue("currency", "USD");
+          } else if (["ETR", "EPA", "WBAG"].includes(values.market)) {
+            setFieldValue("currency", "EUR");
           }
         }, [values.market, setFieldValue]);
 
