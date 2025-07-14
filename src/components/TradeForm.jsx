@@ -87,9 +87,9 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="LON">LON</option>
                   <option value="NYSE">NYSE</option>
                   <option value="NASDAQ">NASDAQ</option>
-                  <option value="ETR">XETRA(ETR)</option>
-                  <option value="EPA">Euronext Paris(EPA)</option>
-                  <option value="WBAG">Wiener Börse(WBAG)</option>
+                  <option value="ETR">XETRA (ETR)</option>
+                  <option value="EPA">Euronext Paris (EPA)</option>
+                  <option value="WBAG">Wiener Börse (WBAG)</option>
                 </Field>
                 <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
               </div>
@@ -106,7 +106,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label> Transaction Type</label>
+                <label>Transaction Type</label>
                 <Field as="select" name="type" className="border p-2 w-full">
                   <option value="Long">Long</option>
                   <option value="Short">Short</option>
@@ -114,7 +114,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               </div>
               <div>
                 <label>Asset Type</label>
-                <Field as="select" name="platform" className="border p-2 w-full">
+                <Field as="select" name="assetType" className="border p-2 w-full">
                   <option value="Paper Money">Paper Money</option>
                   <option value="Real Money">Real Money</option>
                   <option value="CFD">CFD</option>
@@ -161,7 +161,6 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               <div>
                 <label>Overnight Interest</label>
                 <Field type="number" name="overnightInterest" className="border p-2 w-full" />
-                <ErrorMessage name="overnightInterest" component="div" className="text-red-500 text-sm" />
               </div>
             </div>
 
@@ -191,12 +190,10 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               <div>
                 <label>Stop Loss</label>
                 <Field type="number" name="stopLoss" className="border p-2 w-full" />
-                <ErrorMessage name="stopLoss" component="div" className="text-red-500 text-sm" />
               </div>
               <div>
                 <label>Take Profit</label>
                 <Field type="number" name="takeProfit" className="border p-2 w-full" />
-                <ErrorMessage name="takeProfit" component="div" className="text-red-500 text-sm" />
               </div>
             </div>
 
