@@ -164,6 +164,10 @@ const TradeDetails = () => {
       toast.error("You don't have permission to delete trades.");
       return;
     }
+
+    const confirmed = window.confirm("Are you sure you want to delete this trade? This action cannot be undone.");
+    if (!confirmed) return;
+
     try {
       await deleteTrade(id);
       toast.success("Trade deleted successfully");
