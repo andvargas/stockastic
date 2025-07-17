@@ -12,6 +12,7 @@ import { RadarIcon, CoinsIcon, BanknoteIcon, Info } from "lucide-react";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
+import TopNavBar from "../components/TopNavBar";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -104,12 +105,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[95vh] bg-gray-100">
+      <TopNavBar />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-4">
-          <img src="/icons/icon-512.png" alt="Stockastic Logo" className="w-16 h-16 mb-2" />
-          <h1 className="text-3xl font-bold mb-6 text-center">Trading Dashboard</h1>
-          <span className="w-18"></span>
-        </div>
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 shadow text-center">
