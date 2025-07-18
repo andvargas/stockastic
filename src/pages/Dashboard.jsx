@@ -9,6 +9,7 @@ import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon, CoinsIcon, BanknoteIcon, Info } from "lucide-react";
+import currencyRates from "../utils/currencyRates";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
@@ -24,7 +25,7 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [accountTypeFilter, setAccountTypeFilter] = useState(null);
 
-  console.log(trades[9]);
+  console.log(trades[7]);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -104,6 +105,36 @@ const Dashboard = () => {
 
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
+  const getChangeData = (trade) => {
+    const rate = currencyRates[trade.currency] || 1;
+    const entryValue = trade.quantity * trade.entryPrice * rate;
+
+    // If trade is closed, use netProfit as-is (already in GBP)
+    if (trade.status === "Closed" && typeof trade.netProfit === "number") {
+      const change = trade.netProfit;
+      const percentChange = (change / entryValue) * 100;
+
+      return {
+        change,
+        percentChange,
+        currency: "GBP", // netProfit is already in GBP
+      };
+    }
+
+    const refPrice = trade.highestClosePrice ?? trade.manualCurrentPrice;
+    if (!refPrice || !trade.quantity) return { change: null, percentChange: null };
+
+    const currentValue = trade.quantity * refPrice * rate;
+    const change = currentValue - entryValue;
+    const percentChange = (change / entryValue) * 100;
+
+    return {
+      change,
+      percentChange,
+      currency: "GBP",
+    };
+  };
+
   return (
     <div className="min-h-[95vh] bg-gray-100">
       <TopNavBar />
@@ -171,6 +202,7 @@ const Dashboard = () => {
                   </div>
                 </th>
                 <th className="border-b p-2">Entry type/nr/price</th>
+                <th className="border-b p-2">Change</th>
                 <th className="border-b p-2">Date</th>
                 <th className="border-b p-2 hidden md:table-cell">Stop Loss</th>
                 <th className="border-b p-2 hidden md:table-cell">
@@ -213,6 +245,19 @@ const Dashboard = () => {
                       <span>
                         {trade.quantity} @ {formatCurrency(trade.entryPrice, trade.currency)}
                       </span>
+                    </td>
+                    <td className="border-b p-2 text-right">
+                      {(() => {
+                        const { change, percentChange, currency } = getChangeData(trade);
+
+                        if (change === null) return <span className="text-gray-400 italic">N/A</span>;
+
+                        return (
+                          <Tooltip position="left" tooltipText={`${percentChange.toFixed(2)}%`}>
+                            <span className={change >= 0 ? "text-green-600" : "text-red-600"}>£{change.toFixed(2)}</span>
+                          </Tooltip>
+                        );
+                      })()}
                     </td>
                     <td className="border-b p-0.5 align-middle">
                       <DateCard date={trade.date} />
