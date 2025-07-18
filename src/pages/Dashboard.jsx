@@ -13,6 +13,7 @@ import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
 import TopNavBar from "../components/TopNavBar";
+import DateCard from "../components/DateCard";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -201,9 +202,11 @@ const Dashboard = () => {
                         {trade.ticker}
                       </Link>
                     </td>
-                    <td className="border-b p-2 flex items-center gap-2">
+                    <td className="border-b p-2 align-middle">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${trade.type === "Long" ? "bg-green-500" : "bg-red-500"}`}
+                        className={`px-2 mr-2 py-0.5 rounded-full text-xs font-medium text-white ${
+                          trade.type === "Long" ? "bg-green-500" : "bg-red-500"
+                        }`}
                       >
                         {trade.type}
                       </span>
@@ -211,7 +214,9 @@ const Dashboard = () => {
                         {trade.quantity} @ {formatCurrency(trade.entryPrice, trade.currency)}
                       </span>
                     </td>
-                    <td className="border-b p-2">{new Date(trade.date).toLocaleDateString()}</td>
+                    <td className="border-b p-0.5 align-middle">
+                      <DateCard date={trade.date} />
+                    </td>
                     <td className="border-b p-2 hidden md:table-cell">{formatCurrency(trade.stopLoss, trade.currency)}</td>
                     <td className={`border-b p-2 hidden md:table-cell ${trade.wnl === "Broke Even" ? "bg-gray-100" : ""}`}>
                       {trade.wnl === "Broke Even" ? (
