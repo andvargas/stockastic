@@ -19,6 +19,7 @@ const tradeSchema = Yup.object().shape({
   assetType: Yup.string().oneOf(["Paper Money", "Real Money", "CFD", "Paper CFD"]).required("Asset type is required"),
   status: Yup.string().oneOf(["Open", "Closed", "Considering"]).required("Status is required"),
   atr: Yup.number().nullable(),
+  strategy: Yup.string().required("Strategy is required"),
 });
 
 const TradeForm = ({ onAddTrade, onClose }) => {
@@ -57,6 +58,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         status: "Open",
         atr: "",
         overnightInterest: "",
+        strategy: "2.2",
       }}
       validationSchema={tradeSchema}
       onSubmit={async (values, { resetForm }) => {
@@ -136,19 +138,15 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                 <ErrorMessage name="atr" component="div" className="text-red-500 text-sm" />
               </div>
               <div>
-                <Field name="status">
-                  {({ field, form }) => (
-                    <label className="flex items-center gap-2 mt-4">
-                      <input
-                        type="checkbox"
-                        checked={field.value === "Considering"}
-                        onChange={() => form.setFieldValue("status", field.value === "Considering" ? "Open" : "Considering")}
-                        className="accent-cyan-700"
-                      />
-                      Mark as Considering
-                    </label>
-                  )}
+                <label>Strategy</label>
+                <Field as="select" name="strategy" className="border p-2 w-full">
+                  <option value="4.2">1.0</option>
+                  <option value="2.2">2.2</option>
+                  <option value="3.1">3.1</option>
+                  <option value="3.2">3.2</option>
+                  <option value="4.1">4.0</option>
                 </Field>
+                <ErrorMessage name="strategy" component="div" className="text-red-500 text-sm" />
               </div>
             </div>
 
@@ -195,6 +193,21 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                 <label>Take Profit</label>
                 <Field type="number" name="takeProfit" className="border p-2 w-full" />
               </div>
+            </div>
+            <div>
+              <Field name="status">
+                {({ field, form }) => (
+                  <label className="flex items-center gap-2 mt-4">
+                    <input
+                      type="checkbox"
+                      checked={field.value === "Considering"}
+                      onChange={() => form.setFieldValue("status", field.value === "Considering" ? "Open" : "Considering")}
+                      className="accent-cyan-700"
+                    />
+                    Mark as Considering
+                  </label>
+                )}
+              </Field>
             </div>
 
             <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg w-full">

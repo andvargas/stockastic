@@ -2,7 +2,7 @@
 const currencyRates = {
   GBP: 1,
   GBX: 0.01,
-  USD: 0.74,
+  USD: 0.74536682, // 18 July 2024
   EUR: 0.87,
 };
 
