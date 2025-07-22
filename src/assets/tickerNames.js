@@ -51,6 +51,9 @@ const tickerNames = {
   EPA: {
     EL: "EssilorLuxottica",
   },
+  XAMS: {
+    HEIA: "Heineken",
+  },
   ETR: {
     LHA: "Deutsche Lufthansa",
   },

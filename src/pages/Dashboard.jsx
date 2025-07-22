@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [accountTypeFilter, setAccountTypeFilter] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   console.log(trades[7]);
 
@@ -70,23 +71,20 @@ const Dashboard = () => {
     }
   };
 
-  // const filteredTrades = trades.filter((trade) => (showConsidering ? trade.status === "Considering" : trade.status !== "Considering"));
-
   const filteredTrades = trades.filter((trade) => {
-    if (showConsidering) return trade.status === "Considering";
+    const matchesStatus = showConsidering ? trade.status === "Considering" : trade.status !== "Considering";
 
-    if (statusFilter && trade.status !== statusFilter) return false;
+    const matchesAccountType =
+      !accountTypeFilter ||
+      (accountTypeFilter === "Real Money" && ["CFD", "Real Money"].includes(trade.assetType)) ||
+      (accountTypeFilter === "Paper Money" && ["Paper Money", "Paper CFD"].includes(trade.assetType));
 
-    // Map assetType to 'Real Money' or 'Paper Money'
-    if (accountTypeFilter) {
-      const isRealMoney = trade.assetType === "CFD" || trade.assetType === "Real Money";
-      const isPaperMoney = trade.assetType === "Paper Money" || trade.assetType === "Paper CFD";
+    const matchesSearch =
+      !searchTerm ||
+      trade.ticker?.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
+      trade.strategy?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      if (accountTypeFilter === "Real Money" && !isRealMoney) return false;
-      if (accountTypeFilter === "Paper Money" && !isPaperMoney) return false;
-    }
-
-    return trade.status !== "Considering";
+    return matchesStatus && matchesAccountType && matchesSearch;
   });
 
   const totalTrades = filteredTrades.length;
@@ -137,7 +135,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[95vh] bg-gray-100">
-      <TopNavBar />
+      <TopNavBar isLoggedIn={!!user} onLogout={() => {}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

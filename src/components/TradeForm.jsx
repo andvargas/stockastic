@@ -75,7 +75,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
             setFieldValue("currency", "GBX");
           } else if (["NASDAQ", "NYSE"].includes(values.market)) {
             setFieldValue("currency", "USD");
-          } else if (["ETR", "EPA", "WBAG"].includes(values.market)) {
+          } else if (["ETR", "EPA", "XAMS", "WBAG"].includes(values.market)) {
             setFieldValue("currency", "EUR");
           }
         }, [values.market, setFieldValue]);
@@ -91,6 +91,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="NASDAQ">NASDAQ</option>
                   <option value="ETR">XETRA (ETR)</option>
                   <option value="EPA">Euronext Paris (EPA)</option>
+                  <option value="XAMS">Euronext Amsterdam (XAMS)</option>
                   <option value="WBAG">Wiener Börse (WBAG)</option>
                 </Field>
                 <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />

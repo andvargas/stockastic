@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, Search, Menu, X } from "lucide-react";
 
-const TopNavBar = ({ isLoggedIn, onLogout }) => {
+const TopNavBar = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -27,12 +27,23 @@ const TopNavBar = ({ isLoggedIn, onLogout }) => {
             Strategy
           </Link>
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search..."
-              className="pl-8 pr-3 py-1 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              placeholder="Search ticker/strategy"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 pr-8 py-1 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1.5 text-red-600 hover:text-gray-600"
+                aria-label="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         </div>
 
