@@ -8,7 +8,7 @@ import Tooltip from "../components/Tooltip";
 import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
-import { RadarIcon, CoinsIcon, BanknoteIcon, Info } from "lucide-react";
+import { RadarIcon, CoinsIcon, BanknoteIcon, Info, CalendarDaysIcon } from "lucide-react";
 import currencyRates from "../utils/currencyRates";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
@@ -25,6 +25,9 @@ const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [accountTypeFilter, setAccountTypeFilter] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("All");
+  const [customStartDate, setCustomStartDate] = useState(null);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   console.log(trades[7]);
 
@@ -71,6 +74,25 @@ const Dashboard = () => {
     }
   };
 
+  const now = new Date();
+  const matchesDate = (trade) => {
+    if (!trade.date) return false;
+    const tradeDate = new Date(trade.date);
+
+    switch (dateFilter) {
+      case "Last month":
+        const lastMonth = new Date(now);
+        lastMonth.setMonth(now.getMonth() - 1);
+        return tradeDate >= lastMonth;
+      case "This year":
+        return tradeDate.getFullYear() === now.getFullYear();
+      case "Custom":
+        return customStartDate ? tradeDate >= new Date(customStartDate) : true;
+      default:
+        return true; // "All"
+    }
+  };
+
   const filteredTrades = trades.filter((trade) => {
     const matchesStatus = showConsidering ? trade.status === "Considering" : trade.status !== "Considering";
 
@@ -84,7 +106,7 @@ const Dashboard = () => {
       trade.ticker?.toLowerCase().startsWith(searchTerm.toLowerCase()) ||
       trade.strategy?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesStatus && matchesAccountType && matchesSearch;
+    return matchesStatus && matchesAccountType && matchesSearch && matchesDate(trade);
   });
 
   const totalTrades = filteredTrades.length;
@@ -133,6 +155,14 @@ const Dashboard = () => {
     };
   };
 
+  const handleDateFilterChange = (option) => {
+    setDateFilter(option);
+
+    if (option !== "Custom") {
+      setShowDateDropdown(false);
+    }
+  };
+
   return (
     <div className="min-h-[95vh] bg-gray-100">
       <TopNavBar isLoggedIn={!!user} onLogout={() => {}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -158,7 +188,58 @@ const Dashboard = () => {
         {/* Trade List */}
         <div className="bg-white rounded-xl p-6 shadow">
           <div className="flex justify-between items-center mb-4">
-            <span className="w-24"></span> {/* Empty placeholder */}
+            <div className="relative">
+              <Tooltip tooltipText="Filter by date">
+                <button
+                  onClick={() => setShowDateDropdown((prev) => !prev)}
+                  className="flex items-center gap-1 text-sm px-2 py-1 rounded hover:bg-gray-200 transition"
+                >
+                  <CalendarDaysIcon className="h-5 w-5 text-gray-600" />
+                  <span className="text-gray-700">
+                    {dateFilter === "Custom" && customStartDate
+                      ? `> ${new Date(customStartDate).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                        })}`
+                      : dateFilter || "All"}
+                  </span>
+                </button>
+              </Tooltip>
+
+              {showDateDropdown && (
+                <div className="absolute left-0 top-8 bg-white border rounded-lg shadow-md p-2 w-48 z-10 space-y-2 text-sm">
+                  {["All", "Last month", "This year", "Custom"].map((option) => (
+                    <button
+                      key={option}
+                      className={`block w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
+                        dateFilter === option ? "bg-blue-100 font-semibold" : ""
+                      }`}
+                      onClick={() => {
+                        setDateFilter(option);
+                        if (option !== "Custom") {
+                          setCustomStartDate(null);
+                          setShowDateDropdown(false);
+                        }
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+
+                  {dateFilter === "Custom" && (
+                    <input
+                      type="date"
+                      className="w-full border rounded px-2 py-1 mt-2"
+                      value={customStartDate || ""}
+                      onChange={(e) => {
+                        setCustomStartDate(e.target.value);
+                        setShowDateDropdown(false);
+                      }}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
             <h2 className="text-xl font-bold">{showConsidering ? "Potential Buys" : `Trades ${titleModifier}`}</h2>
             <div className="gap-4 flex items-center">
               <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Real Money"}>
