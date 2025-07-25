@@ -273,7 +273,7 @@ const Dashboard = () => {
                 <th className="border-b p-2">
                   <div className="flex items-center gap-1">
                     Ticker
-                    <Tooltip tooltipText={"Click the ticker name to see the details."} showOnLoadDuration={5000}>
+                    <Tooltip tooltipText={"Click the ticker name to see the details."} showOnLoadDuration={2000}>
                       <sup>
                         <Info className="inline cursor-pointer" size="16" />
                       </sup>
@@ -283,11 +283,18 @@ const Dashboard = () => {
                 <th className="border-b p-2">Entry type/nr/price</th>
                 <th className="border-b p-2">Change</th>
                 <th className="border-b p-2">Date</th>
-                <th className="border-b p-2 hidden md:table-cell">Stop Loss</th>
+                <th className="border-b p-2 hidden md:table-cell">
+                  Stop Loss{" "}
+                  <Tooltip tooltipText={"Displays SL (Stop Loss) or Net Loss when closed."}>
+                    <sup>
+                      <Info className="inline cursor-pointer" size="16" />
+                    </sup>
+                  </Tooltip>
+                </th>
                 <th className="border-b p-2 hidden md:table-cell">
                   <div>
                     Take Profit
-                    <Tooltip tooltipText={"Displays BE (Break Even); changes to Take Profit when price exceeds it."}>
+                    <Tooltip tooltipText={"Displays BE/TP (Break Even / Take Profit) or Net Profit when closed."}>
                       <sup>
                         <Info className="inline cursor-pointer" size="16" />
                       </sup>
@@ -341,13 +348,32 @@ const Dashboard = () => {
                     <td className="border-b p-0.5 align-middle">
                       <DateCard date={trade.date} />
                     </td>
-                    <td className="border-b p-2 hidden md:table-cell">{formatCurrency(trade.stopLoss, trade.currency)}</td>
+
+                    {/* <td className="border-b p-2 hidden md:table-cell">{formatCurrency(trade.stopLoss, trade.currency)}</td> */}
+
+                    <td className="border-b p-2 hidden md:table-cell">
+                      {trade.status === "Closed" ? (
+                        trade.netProfit < 0 ? (
+                          <span className="text-red-600">£{Math.abs(trade.netProfit).toFixed(2)}</span>
+                        ) : (
+                          "-"
+                        )
+                      ) : (
+                        formatCurrency(trade.stopLoss, trade.currency)
+                      )}
+                    </td>
                     <td className={`border-b p-2 hidden md:table-cell ${trade.wnl === "Broke Even" ? "bg-gray-100" : ""}`}>
-                      {trade.wnl === "Broke Even" ? (
+                      {trade.status === "Closed" ? (
+                        trade.netProfit >= 0 ? (
+                          <span className="text-green-600">£{trade.netProfit.toFixed(2)}</span>
+                        ) : (
+                          "-"
+                        )
+                      ) : trade.wnl === "Broke Even" ? (
                         trade.takeProfit
                       ) : (
                         <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
-                          <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.05).toFixed(2)}
+                          <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.04).toFixed(2)}
                         </Tooltip>
                       )}
                     </td>
