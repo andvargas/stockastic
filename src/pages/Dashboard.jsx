@@ -15,21 +15,33 @@ import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";
 import TopNavBar from "../components/TopNavBar";
 import DateCard from "../components/DateCard";
+import { useDashboardFilters } from "../contexts/DashboardFilterContext";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
-  const [showConsidering, setShowConsidering] = useState(false);
+  // const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
-  const [accountTypeFilter, setAccountTypeFilter] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState("All");
-  const [customStartDate, setCustomStartDate] = useState(null);
-  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  // const [accountTypeFilter, setAccountTypeFilter] = useState(null);
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [dateFilter, setDateFilter] = useState("All");
+  // const [customStartDate, setCustomStartDate] = useState(null);
 
-  console.log(trades[7]);
+  const {
+    searchTerm,
+    setSearchTerm,
+    accountTypeFilter,
+    setAccountTypeFilter,
+    showConsidering,
+    setShowConsidering,
+    dateFilter,
+    setDateFilter,
+    customStartDate,
+    setCustomStartDate,
+  } = useDashboardFilters();
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   useEffect(() => {
     const fetchTrades = async () => {
