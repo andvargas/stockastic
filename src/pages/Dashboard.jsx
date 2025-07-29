@@ -123,7 +123,7 @@ const Dashboard = () => {
 
   const totalTrades = filteredTrades.length;
   const openPositions = filteredTrades.filter((trade) => trade.status === "Open").length;
-  const totalPL = filteredTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+  const totalPL = filteredTrades.reduce((sum, trade) => sum + (trade.netProfit || 0), 0);
 
   const setShowRealMoney = () => {
     setAccountTypeFilter((prev) => (prev === "Real Money" ? null : "Real Money"));
@@ -175,12 +175,19 @@ const Dashboard = () => {
     }
   };
 
+  // Calculate win/loss ratio
+  if (filteredTrades.length === 0) return null;
+  const wonCount = filteredTrades.filter((t) => t.wnl === "Won").length;
+  const lostCount = filteredTrades.filter((t) => t.wnl === "Lost").length;
+
+  const winLossRatio = lostCount > 0 ? (wonCount / lostCount).toFixed(2) : wonCount > 0 ? "∞" : "0";
+
   return (
     <div className="min-h-[95vh] bg-gray-100">
       <TopNavBar isLoggedIn={!!user} onLogout={() => {}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Total Trades</h2>
             <p className="text-2xl font-semibold">{totalTrades}</p>
@@ -188,6 +195,10 @@ const Dashboard = () => {
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Open Positions</h2>
             <p className="text-2xl font-semibold">{openPositions}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 shadow text-center">
+            <h2 className="text-sm text-gray-500">W/L Ratio</h2>
+            <p className="text-2xl font-semibold">{winLossRatio === "∞" ? "∞" : `${winLossRatio}:1`}</p>
           </div>
           <div className="bg-white rounded-xl p-4 shadow text-center">
             <h2 className="text-sm text-gray-500">Total P/L</h2>
