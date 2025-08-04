@@ -24,28 +24,37 @@ const ProgressTracker = () => {
     fetchTrades();
   }, []);
 
+  console.log("Fetched trade:", trades[0]);
+
   useEffect(() => {
     if (trades.length === 0) return;
 
     const now = new Date();
 
-    // Calculate Weekly Realised
+    // Start of Week (Monday)
     const startOfWeek = new Date(now);
     const day = now.getDay(); // Sunday = 0, Monday = 1
     const diff = now.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
+    // Start of Month
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const isSameOrAfter = (tradeDate, referenceDate) => {
+      if (!tradeDate) return false;
+      const d = new Date(tradeDate);
+      return d >= referenceDate;
+    };
+
     const weeklyRealisedSum = trades
-      .filter((trade) => trade.status === "Closed" && new Date(trade.date) >= startOfWeek)
+      .filter((trade) => trade.status === "Closed" && isSameOrAfter(trade.closeDate, startOfWeek))
       .reduce((sum, trade) => sum + (trade.netProfit || 0), 0);
 
     setWeeklyRealised(weeklyRealisedSum);
 
-    // Calculate Monthly Realised
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const monthlyRealisedSum = trades
-      .filter((trade) => trade.status === "Closed" && new Date(trade.date) >= startOfMonth)
+      .filter((trade) => trade.status === "Closed" && isSameOrAfter(trade.closeDate, startOfMonth))
       .reduce((sum, trade) => sum + (trade.netProfit || 0), 0);
 
     setMonthlyRealised(monthlyRealisedSum);
