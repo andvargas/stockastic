@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import TradeDetails from "./pages/TradeDetails";
+import ProgressTracker from "./pages/ProgressTracker";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -32,6 +33,14 @@ function App() {
                   element={
                     <PrivateRoute>
                       <TradeDetails />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/progress"
+                  element={
+                    <PrivateRoute>
+                      <ProgressTracker />
                     </PrivateRoute>
                   }
                 />

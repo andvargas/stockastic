@@ -20,8 +20,8 @@ const TopNavBar = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm }) => {
           <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium">
             Dashboard
           </Link>
-          <Link to="/journal" className="text-gray-700 hover:text-blue-600 font-medium">
-            Journal
+          <Link to="/progress" className="text-gray-700 hover:text-blue-600 font-medium">
+            Progress
           </Link>
           <Link to="/strategy" className="text-gray-700 hover:text-blue-600 font-medium">
             Strategy
