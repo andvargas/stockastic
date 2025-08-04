@@ -26,3 +26,8 @@ export const deleteTrade = async (id) => {
   const res = await axios.delete(`${API_URL}/trades/${id}`);
   return res.data;
 };
+
+export const addSnapshot = async (tradeId, snapshotData) => {
+  const res = await axios.post(`${API_URL}/trades/${tradeId}/add-snapshot`, snapshotData);
+  return res.data;
+};
