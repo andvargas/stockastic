@@ -24,10 +24,6 @@ const Dashboard = () => {
   const [selectedTradeId, setSelectedTradeId] = useState(null);
   // const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
-  // const [accountTypeFilter, setAccountTypeFilter] = useState(null);
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [dateFilter, setDateFilter] = useState("All");
-  // const [customStartDate, setCustomStartDate] = useState(null);
 
   const {
     searchTerm,
@@ -256,7 +252,12 @@ const Dashboard = () => {
                       value={customStartDate || ""}
                       onChange={(e) => {
                         setCustomStartDate(e.target.value);
-                        setShowDateDropdown(false);
+                      }}
+                      onBlur={(e) => {
+                        // Delay hiding dropdown to allow internal clicks (like arrows)
+                        setTimeout(() => {
+                          setShowDateDropdown(false);
+                        }, 200);
                       }}
                     />
                   )}

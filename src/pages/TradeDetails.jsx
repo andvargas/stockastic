@@ -48,6 +48,7 @@ const TradeDetails = () => {
 
   useEffect(() => {
     fetchTrade();
+    console.log("Fetching trade details for ID:", id);
   }, [id]);
 
   const handleSave = async () => {
@@ -129,7 +130,7 @@ const TradeDetails = () => {
       label: "Strategy",
       type: "select",
       inputClass: "w-24",
-      options: ["none", "1.0", "2.0", "2.1", "2.2", "3.0", "3.1", "3.2", "4.0"],
+      options: ["none", "1.0", "2.0", "2.1", "2.2", "2.3", "3.0", "3.1", "3.2", "4.0"],
     },
     { key: "note", label: "Note", type: "textarea", inputClass: "w-full" },
   ];

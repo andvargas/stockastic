@@ -3,14 +3,25 @@ import Card from "../components/Card";
 import CardContent from "../components/CardContent";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Link } from "react-router-dom";
-import { getTrades } from "../services/stockService";
+import { getTrades, getUnrealisedPL } from "../services/stockService";
 import { formatCurrency } from "../utils/formatCurrency";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+import toast from "react-hot-toast";
+
+dayjs.extend(isoWeek);
 
 const ProgressTracker = () => {
   const [trades, setTrades] = useState([]);
   const [weeklyRealised, setWeeklyRealised] = useState(0);
   const [monthlyRealised, setMonthlyRealised] = useState(0);
+  const [weeklyUnrealised, setWeeklyUnrealised] = useState(0);
+  const [monthlyUnrealised, setMonthlyUnrealised] = useState(0);
+  const [unrealisedData, setUnrealisedData] = useState([]);
 
+  console.log(trades[0]);
+
+  // Fetch trades for realised P/L
   useEffect(() => {
     const fetchTrades = async () => {
       try {
@@ -24,41 +35,65 @@ const ProgressTracker = () => {
     fetchTrades();
   }, []);
 
-  console.log("Fetched trade:", trades[0]);
+  // Fetch unrealised P/L from backend
+  useEffect(() => {
+    const fetchUnrealised = async () => {
+      try {
+        const data = await getUnrealisedPL();
+        console.log("Unrealised P/L data:", data);
 
+        data.forEach((trade) => {
+          if (trade.missingWeekStartSnap) {
+            toast.error(`Warning: Missing week start snapshot for trade ${trade.ticker}`);
+          }
+          if (trade.missingMonthStartSnap) {
+            toast.error(`Warning: Missing month start snapshot for trade ${trade.ticker}`);
+          }
+        });
+
+        setUnrealisedData(data);
+      } catch (error) {
+        console.error("Failed to fetch unrealised P/L:", error);
+      }
+    };
+
+    fetchUnrealised();
+  }, []);
+
+  // Calculate realised P/L locally from trades
   useEffect(() => {
     if (trades.length === 0) return;
 
-    const now = new Date();
+    const now = dayjs();
+    const startOfWeek = now.startOf("isoWeek");
+    const startOfMonth = now.startOf("month");
 
-    // Start of Week (Monday)
-    const startOfWeek = new Date(now);
-    const day = now.getDay(); // Sunday = 0, Monday = 1
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-    startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    // Start of Month
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const isSameOrAfter = (tradeDate, referenceDate) => {
-      if (!tradeDate) return false;
-      const d = new Date(tradeDate);
-      return d >= referenceDate;
+    const isSameOrAfter = (dateStr, ref) => {
+      return dayjs(dateStr).isSame(ref) || dayjs(dateStr).isAfter(ref);
     };
 
-    const weeklyRealisedSum = trades
-      .filter((trade) => trade.status === "Closed" && isSameOrAfter(trade.closeDate, startOfWeek))
-      .reduce((sum, trade) => sum + (trade.netProfit || 0), 0);
+    const realisedThisWeek = trades
+      .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfWeek))
+      .reduce((sum, t) => sum + (t.netProfit || 0), 0);
 
-    setWeeklyRealised(weeklyRealisedSum);
+    const realisedThisMonth = trades
+      .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfMonth))
+      .reduce((sum, t) => sum + (t.netProfit || 0), 0);
 
-    const monthlyRealisedSum = trades
-      .filter((trade) => trade.status === "Closed" && isSameOrAfter(trade.closeDate, startOfMonth))
-      .reduce((sum, trade) => sum + (trade.netProfit || 0), 0);
-
-    setMonthlyRealised(monthlyRealisedSum);
+    setWeeklyRealised(realisedThisWeek);
+    setMonthlyRealised(realisedThisMonth);
   }, [trades]);
+
+  // Calculate total unrealised P/L from backend data
+  useEffect(() => {
+    if (unrealisedData.length === 0) return;
+
+    const weeklySum = unrealisedData.reduce((acc, trade) => acc + (trade.weeklyUnrealisedGBP || 0), 0);
+    const monthlySum = unrealisedData.reduce((acc, trade) => acc + (trade.monthlyUnrealisedGBP || 0), 0);
+
+    setWeeklyUnrealised(weeklySum);
+    setMonthlyUnrealised(monthlySum);
+  }, [unrealisedData]);
 
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -69,7 +104,17 @@ const ProgressTracker = () => {
           <Card>
             <CardContent className="text-center">
               <h2 className="text-sm text-gray-500">Weekly Unrealised</h2>
-              <p className="text-2xl font-semibold">£0.00</p>
+              <p className={`text-2xl font-semibold ${weeklyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {formatCurrency(weeklyUnrealised, "GBP")}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="text-center">
+              <h2 className="text-sm text-gray-500">Monthly Unrealised</h2>
+              <p className={`text-2xl font-semibold ${monthlyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                {formatCurrency(monthlyUnrealised, "GBP")}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -78,12 +123,6 @@ const ProgressTracker = () => {
               <p className={`text-2xl font-semibold ${weeklyRealised >= 0 ? "text-green-500" : "text-red-500"}`}>
                 {formatCurrency(weeklyRealised, "GBP")}
               </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="text-center">
-              <h2 className="text-sm text-gray-500">Monthly Unrealised</h2>
-              <p className="text-2xl font-semibold">£0.00</p>
             </CardContent>
           </Card>
           <Card>
@@ -99,7 +138,7 @@ const ProgressTracker = () => {
         <div className="bg-white rounded-xl p-6 shadow">
           <h2 className="text-xl font-bold mb-4">Overall Progress</h2>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={[] /* We'll wire this up later */}>
+            <LineChart data={[] /* Wire up later */}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -111,7 +150,9 @@ const ProgressTracker = () => {
         </div>
 
         <div className="mt-6">
-          <Link to="/" className="text-blue-600 hover:underline">Back to Dashboard</Link>
+          <Link to="/" className="text-blue-600 hover:underline">
+            Back to Dashboard
+          </Link>
         </div>
       </div>
     </div>

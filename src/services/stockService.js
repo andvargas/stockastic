@@ -31,3 +31,8 @@ export const addSnapshot = async (tradeId, snapshotData) => {
   const res = await axios.post(`${API_URL}/trades/${tradeId}/add-snapshot`, snapshotData);
   return res.data;
 };
+
+export const getUnrealisedPL = async () => {
+  const res = await axios.get(`${API_URL}/trades/unrealised-pl`);
+  return res.data;
+};

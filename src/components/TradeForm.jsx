@@ -141,9 +141,11 @@ const TradeForm = ({ onAddTrade, onClose }) => {
               <div>
                 <label>Strategy</label>
                 <Field as="select" name="strategy" className="border p-2 w-full">
-                  <option value="4.2">1.0</option>
+                  <option value="none">none</option>
+                  <option value="1.0">1.0</option>
                   <option value="2.1">2.1</option>
                   <option value="2.2">2.2</option>
+                  <option value="2.3">2.3</option>
                   <option value="3.1">3.1</option>
                   <option value="3.2">3.2</option>
                   <option value="4.0">4.0</option>
