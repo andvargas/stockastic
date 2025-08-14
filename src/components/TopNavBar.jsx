@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LogIn, LogOut, Search, Menu, X } from "lucide-react";
+import Tooltip from "./Tooltip";
 
 const TopNavBar = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,20 +49,22 @@ const TopNavBar = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm }) => {
         </div>
 
         {/* Right: Auth + Mobile Menu Toggle */}
-        <div className="flex items-center gap-4">
-          {isLoggedIn ? (
-            <button onClick={onLogout} className="hover:text-red-500 transition">
-              <LogOut />
+        <Tooltip tooltipText="Log Out" position="left">
+          <div className="flex items-center gap-4">
+            {isLoggedIn ? (
+              <button onClick={onLogout} className="hover:text-red-500 transition">
+                <LogOut />
+              </button>
+            ) : (
+              <Link to="/login" className="hover:text-green-600 transition">
+                <LogIn />
+              </Link>
+            )}
+            <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X /> : <Menu />}
             </button>
-          ) : (
-            <Link to="/login" className="hover:text-green-600 transition">
-              <LogIn />
-            </Link>
-          )}
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
-        </div>
+          </div>
+        </Tooltip>
       </div>
 
       {/* Mobile Dropdown Menu */}

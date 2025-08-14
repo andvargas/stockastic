@@ -18,7 +18,7 @@ import DateCard from "../components/DateCard";
 import { useDashboardFilters } from "../contexts/DashboardFilterContext";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
@@ -180,7 +180,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-[95vh] bg-gray-100">
-      <TopNavBar isLoggedIn={!!user} onLogout={() => {}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <TopNavBar isLoggedIn={!!user} onLogout={logout} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
