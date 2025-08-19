@@ -73,8 +73,8 @@ const TopNavBar = ({ isLoggedIn, onLogout, searchTerm, setSearchTerm }) => {
           <Link to="/" onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 hover:text-blue-600">
             Dashboard
           </Link>
-          <Link to="/journal" onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 hover:text-blue-600">
-            Journal
+          <Link to="/progress" onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 hover:text-blue-600">
+            Progress
           </Link>
           <Link to="/trades" onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 hover:text-blue-600">
             Trades

@@ -16,13 +16,13 @@ import { hasPermission } from "../utils/roleUtils";
 import TopNavBar from "../components/TopNavBar";
 import DateCard from "../components/DateCard";
 import { useDashboardFilters } from "../contexts/DashboardFilterContext";
+import { getLatestSnapshotPrice, getHighestSnapshotPrice } from "../services/snapshotService";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [trades, setTrades] = useState([]);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
-  // const [showConsidering, setShowConsidering] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
 
   const {
@@ -75,7 +75,6 @@ const Dashboard = () => {
       await addNote(entry);
       toast.success("Journal note added!");
       closeJournalModal();
-      // optionally trigger a data refresh
     } catch (error) {
       console.error("Failed to add journal note", error);
       toast.error("Failed to add note.");
@@ -134,33 +133,32 @@ const Dashboard = () => {
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
   const getChangeData = (trade) => {
+    if (!trade.quantity) return { change: null, percentChange: null, currency: "GBP" };
+
     const rate = currencyRates[trade.currency] || 1;
-    const entryValue = trade.quantity * trade.entryPrice * rate;
+    const qty = trade.quantity;
 
-    // If trade is closed, use netProfit as-is (already in GBP)
-    if (trade.status === "Closed" && typeof trade.netProfit === "number") {
-      const change = trade.netProfit;
-      const percentChange = (change / entryValue) * 100;
+    const isLong = trade.type === "Long";
 
-      return {
-        change,
-        percentChange,
-        currency: "GBP", // netProfit is already in GBP
-      };
+    let latestPrice;
+    if (trade.status === "Closed") {
+      latestPrice = trade.closePrice; // if the trade is closed, has to be a close price
+    } else {
+      latestPrice = trade.latestSnapshotPrice ?? trade.manualCurrentPrice ?? trade.entryPrice; // wrong, latestSnapshotPrice doesnt exist. we have to get the snapshots per trade and find the latest one.
     }
 
-    const refPrice = trade.highestClosePrice ?? trade.manualCurrentPrice;
-    if (!refPrice || !trade.quantity) return { change: null, percentChange: null };
+    const peakPrice = trade.highestCloseSinceEntry ?? trade.highestClosePrice ?? latestPrice; // wrong, highestCloseSinceEntry doesnt exist in a trade object. we have to get the snapshots per trade and find the highest one.
 
-    const currentValue = trade.quantity * refPrice * rate;
-    const change = currentValue - entryValue;
-    const percentChange = (change / entryValue) * 100;
+    if (latestPrice == null || peakPrice == null) return { change: null, percentChange: null, currency: "GBP" };
 
-    return {
-      change,
-      percentChange,
-      currency: "GBP",
-    };
+    const perShareDelta = isLong ? latestPrice - peakPrice : peakPrice - latestPrice;
+
+    const change = perShareDelta * qty * rate;
+    const peakValueGBP = peakPrice * qty * rate;
+
+    const percentChange = peakValueGBP ? (change / peakValueGBP) * 100 : null;
+
+    return { change, percentChange, currency: "GBP" };
   };
 
   const handleDateFilterChange = (option) => {
@@ -171,7 +169,6 @@ const Dashboard = () => {
     }
   };
 
-  // Calculate win/loss ratio
   if (filteredTrades.length === 0) return null;
   const wonCount = filteredTrades.filter((t) => t.wnl === "Won").length;
   const lostCount = filteredTrades.filter((t) => t.wnl === "Lost").length;
@@ -254,7 +251,6 @@ const Dashboard = () => {
                         setCustomStartDate(e.target.value);
                       }}
                       onBlur={(e) => {
-                        // Delay hiding dropdown to allow internal clicks (like arrows)
                         setTimeout(() => {
                           setShowDateDropdown(false);
                         }, 200);
@@ -363,7 +359,7 @@ const Dashboard = () => {
                         if (change === null) return <span className="text-gray-400 italic">N/A</span>;
 
                         return (
-                          <Tooltip position="left" tooltipText={`${percentChange.toFixed(2)}%`}>
+                          <Tooltip position="left" tooltipText={percentChange !== null ? `${percentChange.toFixed(2)}%` : "N/A"}>
                             <span className={change >= 0 ? "text-green-600" : "text-red-600"}>£{change.toFixed(2)}</span>
                           </Tooltip>
                         );
@@ -372,8 +368,6 @@ const Dashboard = () => {
                     <td className="border-b p-0.5 align-middle">
                       <DateCard date={trade.date} />
                     </td>
-
-                    {/* <td className="border-b p-2 hidden md:table-cell">{formatCurrency(trade.stopLoss, trade.currency)}</td> */}
 
                     <td className="border-b p-2 hidden md:table-cell">
                       {trade.status === "Closed" ? (
