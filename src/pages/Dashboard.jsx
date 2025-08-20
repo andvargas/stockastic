@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [selectedTradeId, setSelectedTradeId] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [changeDataMap, setChangeDataMap] = useState({});
 
   const {
     searchTerm,
@@ -51,6 +52,27 @@ const Dashboard = () => {
 
     fetchTrades();
   }, []);
+
+  useEffect(() => {
+    const fetchChangeData = async () => {
+      const results = await Promise.all(
+        trades.map(async (trade) => {
+          const data = await getChangeData(trade);
+          return { id: trade._id, ...data };
+        })
+      );
+
+      const map = {};
+      results.forEach((r) => {
+        map[r.id] = r;
+      });
+      setChangeDataMap(map);
+    };
+
+    if (trades.length > 0) {
+      fetchChangeData();
+    }
+  }, [trades]);
 
   const handleAddTrade = async (newTrade) => {
     try {
@@ -132,30 +154,38 @@ const Dashboard = () => {
 
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
-  const getChangeData = (trade) => {
+  // inside Dashboard.jsx
+
+  const getChangeData = async (trade) => {
     if (!trade.quantity) return { change: null, percentChange: null, currency: "GBP" };
 
     const rate = currencyRates[trade.currency] || 1;
     const qty = trade.quantity;
-
     const isLong = trade.type === "Long";
 
     let latestPrice;
     if (trade.status === "Closed") {
-      latestPrice = trade.closePrice; // if the trade is closed, has to be a close price
+      latestPrice = trade.closePrice; // closed → final price is close price
     } else {
-      latestPrice = trade.latestSnapshotPrice ?? trade.manualCurrentPrice ?? trade.entryPrice; // wrong, latestSnapshotPrice doesnt exist. we have to get the snapshots per trade and find the latest one.
+      latestPrice = await getLatestSnapshotPrice(trade._id);
+      if (!latestPrice) {
+        // fallback if no snapshots yet
+        latestPrice = trade.manualCurrentPrice ?? trade.entryPrice;
+      }
     }
 
-    const peakPrice = trade.highestCloseSinceEntry ?? trade.highestClosePrice ?? latestPrice; // wrong, highestCloseSinceEntry doesnt exist in a trade object. we have to get the snapshots per trade and find the highest one.
+    const peakPrice = await getHighestSnapshotPrice(trade._id);
 
-    if (latestPrice == null || peakPrice == null) return { change: null, percentChange: null, currency: "GBP" };
+    if (latestPrice == null || peakPrice == null) {
+      return { change: null, percentChange: null, currency: "GBP" };
+    }
 
+    // Calculate delta vs peak
     const perShareDelta = isLong ? latestPrice - peakPrice : peakPrice - latestPrice;
-
     const change = perShareDelta * qty * rate;
-    const peakValueGBP = peakPrice * qty * rate;
 
+    // Base % on the *peak value in GBP*
+    const peakValueGBP = peakPrice * qty * rate;
     const percentChange = peakValueGBP ? (change / peakValueGBP) * 100 : null;
 
     return { change, percentChange, currency: "GBP" };
@@ -354,9 +384,9 @@ const Dashboard = () => {
                     </td>
                     <td className="border-b p-2 text-right">
                       {(() => {
-                        const { change, percentChange, currency } = getChangeData(trade);
+                        const { change, percentChange } = changeDataMap[trade._id] || {};
 
-                        if (change === null) return <span className="text-gray-400 italic">N/A</span>;
+                        if (change == null) return <span className="text-gray-400 italic">N/A</span>;
 
                         return (
                           <Tooltip position="left" tooltipText={percentChange !== null ? `${percentChange.toFixed(2)}%` : "N/A"}>
