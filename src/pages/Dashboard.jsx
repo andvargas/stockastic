@@ -199,7 +199,6 @@ const Dashboard = () => {
     }
   };
 
-  if (filteredTrades.length === 0) return null;
   const wonCount = filteredTrades.filter((t) => t.wnl === "Won").length;
   const lostCount = filteredTrades.filter((t) => t.wnl === "Lost").length;
 
@@ -356,7 +355,13 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTrades &&
+              {filteredTrades.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-500">
+                    No trades found matching your search.
+                  </td>
+                </tr>
+              ) : (
                 filteredTrades.map((trade) => (
                   <tr key={trade._id} className={trade.wnl === "Broke Even" ? "bg-gray-100" : ""}>
                     <td className="border-b p-2">
@@ -449,7 +454,8 @@ const Dashboard = () => {
                       )}
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
