@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Card from "../components/Card";
 import CardContent from "../components/CardContent";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as TooltipRecharts, ResponsiveContainer } from "recharts";
 import { Link } from "react-router-dom";
 import { getTrades, getUnrealisedPL } from "../services/stockService";
 import { formatCurrency } from "../utils/formatCurrency";
@@ -9,6 +9,8 @@ import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import toast from "react-hot-toast";
 import AssetTypeSwitch from "@/components/AssetTypeSwitch";
+import { PackagePlus } from "lucide-react";
+import Tooltip from "@/components/Tooltip";
 
 dayjs.extend(isoWeek);
 
@@ -93,13 +95,33 @@ const ProgressTracker = () => {
     };
   }, [trades, unrealisedData, selectedAssetTypes]);
 
+  const handleRecordPerformance = async () => {
+    try {
+      const response = await axios.post("http://localhost:5002/api/performance-history/record", {
+        package: "PackagePlus", // Example data
+        trades: [
+          { tradeId: "12345", result: "win", profit: 150 },
+          { tradeId: "12346", result: "loss", profit: -50 },
+        ],
+      });
+
+      console.log("Performance recorded:", response.data);
+      alert("Performance history saved successfully!");
+    } catch (error) {
+      console.error("Error recording performance:", error);
+      alert("Failed to record performance.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold mb-6">Progress Tracker</h1>
 
-          {/* Asset Type Switch */}
+          <Tooltip tooltipText="Add Performance snapshot">
+            <PackagePlus className="h-5 w-5 text-gray-500" onClick={handleRecordPerformance} />
+          </Tooltip>
 
           <AssetTypeSwitch onChange={setSelectedAssetTypes} />
         </div>
@@ -148,7 +170,7 @@ const ProgressTracker = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip />
+              <TooltipRecharts />
               <Line type="monotone" dataKey="realised" stroke="#34D399" name="Realised" strokeWidth={2} />
               <Line type="monotone" dataKey="unrealised" stroke="#60A5FA" name="Unrealised" strokeWidth={2} />
             </LineChart>

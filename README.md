@@ -10,6 +10,11 @@ A simple trading journal web app to track, view, and update your trades.
 - Add, edit, and close trades (admin/trader only)
 - Add personal journal notes per trade
 - Filter trades by status or account type (Real Money / Paper Money)
+- **Snapshots**: store price snapshots per trade (used for peak vs latest calculations)
+- **Change column**: 
+  - For open trades → difference between latest snapshot and peak snapshot, in GBP  
+  - For closed trades → difference between close price and peak snapshot  
+  - Tooltip on hover shows percentage change
 - Summary cards for total trades, open positions, and total P/L
 - Responsive, mobile-friendly UI with Tailwind CSS
 - Toast notifications for success/error feedback (react-hot-toast)
