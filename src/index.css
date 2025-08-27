@@ -152,3 +152,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Prevent accidental scroll changing values */
+input[type="number"]:focus {
+  wheel-event: none;
+}

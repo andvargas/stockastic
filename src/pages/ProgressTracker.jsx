@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import AssetTypeSwitch from "@/components/AssetTypeSwitch";
 import { PackagePlus } from "lucide-react";
 import Tooltip from "@/components/Tooltip";
+import { createPerformanceSnapshot } from "../services/performanceService";
 
 dayjs.extend(isoWeek);
 
@@ -18,98 +19,79 @@ const ProgressTracker = () => {
   const [trades, setTrades] = useState([]);
   const [unrealisedData, setUnrealisedData] = useState([]);
   const [selectedAssetTypes, setSelectedAssetTypes] = useState(["Real Money", "CFD"]);
+  const [formData, setFormData] = useState({
+    interval: "weekly",
+    offset: 0,
+    realisedPL: 0,
+    paperRealisedPL: 0,
+    unrealisedPL: 0,
+    paperUnRealisedPL: 0,
+  });
+  const [showForm, setShowForm] = useState(false);
 
-  // Fetch trades for realised P/L
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const data = await getTrades();
-        setTrades(data);
-      } catch (error) {
-        console.error("Failed to fetch trades:", error);
+        setTrades(await getTrades());
+      } catch (err) {
+        console.error(err);
       }
     };
     fetchTrades();
   }, []);
 
-  // Fetch unrealised P/L from backend
   useEffect(() => {
     const fetchUnrealised = async () => {
       try {
         const data = await getUnrealisedPL();
-        console.log("Unrealised P/L data:", data);
-
         data.forEach((trade) => {
-          if (trade.missingWeekStartSnap) {
-            toast.error(`Warning: Missing week start snapshot for trade ${trade.ticker}`);
-          }
-          if (trade.missingMonthStartSnap) {
-            toast.error(`Warning: Missing month start snapshot for trade ${trade.ticker}`);
-          }
+          if (trade.missingWeekStartSnap) toast.error(`Missing week start snapshot: ${trade.ticker}`);
+          if (trade.missingMonthStartSnap) toast.error(`Missing month start snapshot: ${trade.ticker}`);
         });
-
         setUnrealisedData(data);
-      } catch (error) {
-        console.error("Failed to fetch unrealised P/L:", error);
+      } catch (err) {
+        console.error(err);
       }
     };
     fetchUnrealised();
   }, []);
 
-  // Memoized calculations so they re-run only when dependencies change
   const { weeklyRealised, monthlyRealised, weeklyUnrealised, monthlyUnrealised } = useMemo(() => {
-    if (trades.length === 0 && unrealisedData.length === 0) {
-      return { weeklyRealised: 0, monthlyRealised: 0, weeklyUnrealised: 0, monthlyUnrealised: 0 };
-    }
+    const isSameOrAfter = (dateStr, ref) => dayjs(dateStr).isSame(ref) || dayjs(dateStr).isAfter(ref);
 
-    const now = dayjs();
-    const startOfWeek = now.startOf("isoWeek");
-    const startOfMonth = now.startOf("month");
-
-    const isSameOrAfter = (dateStr, ref) => {
-      return dayjs(dateStr).isSame(ref) || dayjs(dateStr).isAfter(ref);
-    };
-
-    // Filter trades by asset type
     const filteredTrades = trades.filter((t) => selectedAssetTypes.includes(t.assetType));
-
-    const realisedThisWeek = filteredTrades
-      .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfWeek))
-      .reduce((sum, t) => sum + (t.netProfit || 0), 0);
-
-    const realisedThisMonth = filteredTrades
-      .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfMonth))
-      .reduce((sum, t) => sum + (t.netProfit || 0), 0);
-
-    // Filter unrealised data by asset type
     const filteredUnrealised = unrealisedData.filter((t) => selectedAssetTypes.includes(t.assetType));
 
-    const weeklySum = filteredUnrealised.reduce((acc, trade) => acc + (trade.weeklyUnrealisedGBP || 0), 0);
-    const monthlySum = filteredUnrealised.reduce((acc, trade) => acc + (trade.monthlyUnrealisedGBP || 0), 0);
+    const startOfWeek = dayjs().startOf("isoWeek");
+    const startOfMonth = dayjs().startOf("month");
 
     return {
-      weeklyRealised: realisedThisWeek,
-      monthlyRealised: realisedThisMonth,
-      weeklyUnrealised: weeklySum,
-      monthlyUnrealised: monthlySum,
+      weeklyRealised: filteredTrades
+        .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfWeek))
+        .reduce((sum, t) => sum + (t.netProfit || 0), 0),
+      monthlyRealised: filteredTrades
+        .filter((t) => t.status === "Closed" && isSameOrAfter(t.closeDate, startOfMonth))
+        .reduce((sum, t) => sum + (t.netProfit || 0), 0),
+      weeklyUnrealised: filteredUnrealised.reduce((sum, t) => sum + (t.weeklyUnrealisedGBP || 0), 0),
+      monthlyUnrealised: filteredUnrealised.reduce((sum, t) => sum + (t.monthlyUnrealisedGBP || 0), 0),
     };
   }, [trades, unrealisedData, selectedAssetTypes]);
 
-  const handleRecordPerformance = async () => {
-    try {
-      const response = await axios.post("http://localhost:5002/api/performance-history/record", {
-        package: "PackagePlus", // Example data
-        trades: [
-          { tradeId: "12345", result: "win", profit: 150 },
-          { tradeId: "12346", result: "loss", profit: -50 },
-        ],
-      });
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-      console.log("Performance recorded:", response.data);
-      alert("Performance history saved successfully!");
-    } catch (error) {
-      console.error("Error recording performance:", error);
-      alert("Failed to record performance.");
+  const handleSubmitSnapshot = async () => {
+    try {
+      const payload = { ...formData, offset: Number(formData.offset) };
+      const data = await createPerformanceSnapshot(payload);
+      toast.success("Performance snapshot saved!");
+      console.log("Saved:", data);
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save snapshot.");
     }
   };
 
@@ -118,13 +100,87 @@ const ProgressTracker = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold mb-6">Progress Tracker</h1>
-
           <Tooltip tooltipText="Add Performance snapshot">
-            <PackagePlus className="h-5 w-5 text-gray-500" onClick={handleRecordPerformance} />
+            <PackagePlus className="h-5 w-5 text-gray-500 cursor-pointer" onClick={() => setShowForm((prev) => !prev)} />
           </Tooltip>
-
           <AssetTypeSwitch onChange={setSelectedAssetTypes} />
         </div>
+
+        {/* Form for manual snapshot */}
+        {showForm && (
+          <div className="bg-white p-4 rounded-xl mb-6 shadow">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Interval</label>
+                <select name="interval" value={formData.interval} onChange={handleFormChange} className="border p-2 rounded">
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Realised P/L</label>
+                <input
+                  type="number"
+                  name="realisedPL"
+                  value={formData.realisedPL}
+                  onChange={handleFormChange}
+                  onWheel={(e) => e.target.blur()}
+                  placeholder="Realised PL"
+                  className="border p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Unrealised P/L</label>
+                <input
+                  type="number"
+                  name="unrealisedPL"
+                  value={formData.unrealisedPL}
+                  onChange={handleFormChange}
+                  placeholder="Paper Realised PL"
+                  className="border p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Offset</label>
+                <input
+                  type="number"
+                  name="offset"
+                  value={formData.offset}
+                  onChange={handleFormChange}
+                  style={{ width: "100px" }}
+                  placeholder="Offset"
+                  className="border p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Paper Realised P/L</label>
+                <input
+                  type="number"
+                  name="paperRealisedPL"
+                  value={formData.paperRealisedPL}
+                  onChange={handleFormChange}
+                  placeholder="Paper Realised PL"
+                  className="border p-2 rounded"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Paper Unrealised P/L</label>
+                <input
+                  type="number"
+                  name="paperUnRealisedPL"
+                  value={formData.paperUnRealisedPL}
+                  onChange={handleFormChange}
+                  placeholder="Paper Unrealised PL"
+                  className="border p-2 rounded"
+                />
+              </div>
+            </div>
+            <button onClick={handleSubmitSnapshot} className="mt-4 px-4 py-2 bg-cyan-700 text-white rounded hover:bg-cyan-500">
+              Save Snapshot
+            </button>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -179,7 +235,7 @@ const ProgressTracker = () => {
 
         {/* Back link */}
         <div className="mt-6">
-          <Link to="/" className="px-4 py-2 rounded-lg mt-8 transition-colors duration-300  bg-cyan-700 text-white hover:bg-cyan-400">
+          <Link to="/" className="px-4 py-2 rounded-lg mt-8 transition-colors duration-300 bg-cyan-700 text-white hover:bg-cyan-400">
             Back to Dashboard
           </Link>
         </div>
