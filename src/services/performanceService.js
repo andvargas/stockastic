@@ -1,10 +1,16 @@
 import api from "./api";
 
-// Fetch performance history
+// Fetch performance history - I'm not sure this is correct
 export const getPerformanceHistory = async (offsetWeeks = 0) => {
   const response = await api.get("/performance", {
     params: { offsetWeeks },
   });
+  return response.data;
+};
+
+// Get all performance snapshots
+export const getAllPerformanceHistory = async () => {
+  const response = await api.get(`/performance`);
   return response.data;
 };
 

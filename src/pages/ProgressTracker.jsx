@@ -11,7 +11,8 @@ import toast from "react-hot-toast";
 import AssetTypeSwitch from "@/components/AssetTypeSwitch";
 import { PackagePlus } from "lucide-react";
 import Tooltip from "@/components/Tooltip";
-import { createPerformanceSnapshot } from "../services/performanceService";
+import { createPerformanceSnapshot, getAllPerformanceHistory, deletePerformanceHistory } from "../services/performanceService";
+import PerformanceTable from "../components/PerformanceTable";
 
 dayjs.extend(isoWeek);
 
@@ -28,6 +29,7 @@ const ProgressTracker = () => {
     paperUnRealisedPL: 0,
   });
   const [showForm, setShowForm] = useState(false);
+  const [performanceData, setPerformanceData] = useState([]);
 
   useEffect(() => {
     const fetchTrades = async () => {
@@ -54,6 +56,40 @@ const ProgressTracker = () => {
       }
     };
     fetchUnrealised();
+  }, []);
+
+  // fetch performance snapshots
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      try {
+        const snapshots = await getAllPerformanceHistory();
+
+        const mapped = snapshots.map((item) => {
+          const weekNumber = item.interval === "weekly" ? dayjs(item.periodStart).isoWeek() : null;
+          const dateRange =
+            item.interval === "monthly"
+              ? dayjs(item.periodStart).format("MMM YYYY")
+              : `${dayjs(item.periodStart).format("DD MMM")} - ${dayjs(item.periodEnd).format("DD MMM")}`;
+
+          return {
+            _id: item._id,
+            interval: item.interval,
+            weekNumber,
+            dateRange,
+            realised: item.realisedPL,
+            unrealised: item.unrealisedPL,
+            paperRealised: item.paperRealisedPL,
+            paperUnrealised: item.paperUnRealisedPL,
+          };
+        });
+        setPerformanceData(mapped);
+      } catch (err) {
+        console.error("Failed to fetch performance history:", err);
+        toast.error("Failed to load performance history.");
+      }
+    };
+
+    fetchPerformance();
   }, []);
 
   const { weeklyRealised, monthlyRealised, weeklyUnrealised, monthlyUnrealised } = useMemo(() => {
@@ -89,9 +125,42 @@ const ProgressTracker = () => {
       toast.success("Performance snapshot saved!");
       console.log("Saved:", data);
       setShowForm(false);
+
+      // Add the new snapshot to performanceData
+      const weekNumber = data.interval === "weekly" ? dayjs(data.periodStart).isoWeek() : null;
+      const dateRange = `${dayjs(data.periodStart).format("DD MMM")} - ${dayjs(data.periodEnd).format("DD MMM")}`;
+      setPerformanceData((prev) => [
+        ...prev,
+        {
+          _id: data._id,
+          interval: data.interval,
+          weekNumber,
+          dateRange,
+          realised: data.realisedPL,
+          unrealised: data.unrealisedPL,
+          paperRealised: data.paperRealisedPL,
+          paperUnrealised: data.paperUnRealisedPL,
+        },
+      ]);
     } catch (err) {
       console.error(err);
       toast.error("Failed to save snapshot.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this performance snapshot?")) return;
+
+    try {
+      await deletePerformanceHistory(id);
+
+      // Remove from state
+      setPerformanceData((prev) => prev.filter((row) => row._id !== id));
+
+      toast.success("Performance snapshot deleted!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete snapshot.");
     }
   };
 
@@ -239,6 +308,7 @@ const ProgressTracker = () => {
             Back to Dashboard
           </Link>
         </div>
+        <PerformanceTable data={performanceData} onDelete={handleDelete} />
       </div>
     </div>
   );

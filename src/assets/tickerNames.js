@@ -24,6 +24,7 @@ const tickerNames = {
     SMT: "Scottish Mortgage Investment Trust PLC",
     CCL: "Carnival plc",
     IMB: "Imperial Brands",
+    LGEN: "Legal & General Group Plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -36,6 +37,9 @@ const tickerNames = {
     LLY: "Eli Lilly And Co",
     ABBV: "AbbVie Inc",
     IBM: "IBM Common Stock",
+    WMB: "Williams Companies Inc",
+    WM: "Waste Management Inc",
+    BABA: "Alibaba Group Holding Ltd",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",

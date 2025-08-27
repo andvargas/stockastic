@@ -48,17 +48,18 @@ git clone https://github.com/andvargas/stockastic.git
 
 ## Backend (AWS EC2 + PM2 + Nginx)
 
-- Deployed via PM2 deploy with ecosystem.config.cjs
+<!-- - Deployed via PM2 deploy with ecosystem.config.cjs
 - Reverse proxied with Nginx (port 3000 → domain SSL)
 - Node v22 managed via nvm
 - .env kept on EC2 under /var/www/api-stockastic/current/
-- PM2 logs to /home/ubuntu/.pm2/logs/
+- PM2 logs to /home/ubuntu/.pm2/logs/ -->
+- Originally was on AWS, changed to Render
 
 ## Frontend (Netlify)
 
 - Connected via GitHub repository
 - Built automatically via Vite
-- Deployed to: https://tradingapp.webtechsupport.co.uk
+- Deployed to: https://stockastic.webtechsupport.co.uk
 - PWA manifest + icons configured
 
 ### 📱 How to Install (PWA)
