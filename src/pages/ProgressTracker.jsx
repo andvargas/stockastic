@@ -169,6 +169,18 @@ const ProgressTracker = () => {
     }
   };
 
+  // Chart data (monthly realised by default)
+  const monthlyChartData = useMemo(() => {
+    return performanceData
+      .filter((d) => d.interval === "monthly")
+      .map((d) => ({
+        date: d.dateRange,
+        realised: d.realised,
+        unrealised: d.unrealised, // keep in case want to show later
+      }))
+      .reverse();
+  }, [performanceData]);
+
   return (
     <>
       <TopNavBar />
@@ -298,15 +310,14 @@ const ProgressTracker = () => {
 
           {/* Chart */}
           <div className="bg-white rounded-xl p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">Overall Progress</h2>
+            <h2 className="text-xl font-bold mb-4">Overall Progress - Monthly Realised P/L</h2>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={[] /* Wire up later */}>
+              <LineChart data={monthlyChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <TooltipRecharts />
+                <TooltipRecharts formatter={(value) => formatCurrency(value, "GBP")} />
                 <Line type="monotone" dataKey="realised" stroke="#34D399" name="Realised" strokeWidth={2} />
-                <Line type="monotone" dataKey="unrealised" stroke="#60A5FA" name="Unrealised" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
