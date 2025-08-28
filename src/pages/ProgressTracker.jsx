@@ -13,6 +13,8 @@ import { PackagePlus } from "lucide-react";
 import Tooltip from "@/components/Tooltip";
 import { createPerformanceSnapshot, getAllPerformanceHistory, deletePerformanceHistory } from "../services/performanceService";
 import PerformanceTable from "../components/PerformanceTable";
+import TopNavBar from "@/components/TopNavBar";
+import RoundIconButton from "@/components/RoundIconButton";
 
 dayjs.extend(isoWeek);
 
@@ -128,7 +130,10 @@ const ProgressTracker = () => {
 
       // Add the new snapshot to performanceData
       const weekNumber = data.interval === "weekly" ? dayjs(data.periodStart).isoWeek() : null;
-      const dateRange = `${dayjs(data.periodStart).format("DD MMM")} - ${dayjs(data.periodEnd).format("DD MMM")}`;
+      const dateRange =
+        data.interval === "monthly"
+          ? dayjs(data.periodStart).format("MMM YYYY")
+          : `${dayjs(data.periodStart).format("DD MMM")} - ${dayjs(data.periodEnd).format("DD MMM")}`;
       setPerformanceData((prev) => [
         ...prev,
         {
@@ -165,152 +170,157 @@ const ProgressTracker = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold mb-6">Progress Tracker</h1>
-          <Tooltip tooltipText="Add Performance snapshot">
-            <PackagePlus className="h-5 w-5 text-gray-500 cursor-pointer" onClick={() => setShowForm((prev) => !prev)} />
-          </Tooltip>
-          <AssetTypeSwitch onChange={setSelectedAssetTypes} />
-        </div>
-
-        {/* Form for manual snapshot */}
-        {showForm && (
-          <div className="bg-white p-4 rounded-xl mb-6 shadow">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Interval</label>
-                <select name="interval" value={formData.interval} onChange={handleFormChange} className="border p-2 rounded">
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Realised P/L</label>
-                <input
-                  type="number"
-                  name="realisedPL"
-                  value={formData.realisedPL}
-                  onChange={handleFormChange}
-                  onWheel={(e) => e.target.blur()}
-                  placeholder="Realised PL"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Unrealised P/L</label>
-                <input
-                  type="number"
-                  name="unrealisedPL"
-                  value={formData.unrealisedPL}
-                  onChange={handleFormChange}
-                  placeholder="Paper Realised PL"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Offset</label>
-                <input
-                  type="number"
-                  name="offset"
-                  value={formData.offset}
-                  onChange={handleFormChange}
-                  style={{ width: "100px" }}
-                  placeholder="Offset"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Paper Realised P/L</label>
-                <input
-                  type="number"
-                  name="paperRealisedPL"
-                  value={formData.paperRealisedPL}
-                  onChange={handleFormChange}
-                  placeholder="Paper Realised PL"
-                  className="border p-2 rounded"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Paper Unrealised P/L</label>
-                <input
-                  type="number"
-                  name="paperUnRealisedPL"
-                  value={formData.paperUnRealisedPL}
-                  onChange={handleFormChange}
-                  placeholder="Paper Unrealised PL"
-                  className="border p-2 rounded"
-                />
-              </div>
+    <>
+      <TopNavBar />
+      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold">Progress Tracker</h1>
+            <div className="flex items-center gap-4">
+              <Tooltip tooltipText="Add Performance snapshot">
+                <RoundIconButton icon={PackagePlus} onClick={() => setShowForm((prev) => !prev)} iconClassName="text-green-600" color="bg-white" />
+              </Tooltip>
+              <AssetTypeSwitch onChange={setSelectedAssetTypes} />
             </div>
-            <button onClick={handleSubmitSnapshot} className="mt-4 px-4 py-2 bg-cyan-700 text-white rounded hover:bg-cyan-500">
-              Save Snapshot
-            </button>
           </div>
-        )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="text-center">
-              <h2 className="text-sm text-gray-500">Weekly Unrealised</h2>
-              <p className={`text-2xl font-semibold ${weeklyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
-                {formatCurrency(weeklyUnrealised, "GBP")}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="text-center">
-              <h2 className="text-sm text-gray-500">Monthly Unrealised</h2>
-              <p className={`text-2xl font-semibold ${monthlyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
-                {formatCurrency(monthlyUnrealised, "GBP")}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="text-center">
-              <h2 className="text-sm text-gray-500">Weekly Realised</h2>
-              <p className={`text-2xl font-semibold ${weeklyRealised >= 0 ? "text-green-500" : "text-red-500"}`}>
-                {formatCurrency(weeklyRealised, "GBP")}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="text-center">
-              <h2 className="text-sm text-gray-500">Monthly Realised</h2>
-              <p className={`text-2xl font-semibold ${monthlyRealised >= 0 ? "text-green-500" : "text-red-500"}`}>
-                {formatCurrency(monthlyRealised, "GBP")}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Form for manual snapshot */}
+          {showForm && (
+            <div className="bg-white p-4 rounded-xl mb-6 shadow">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Interval</label>
+                  <select name="interval" value={formData.interval} onChange={handleFormChange} className="border p-2 rounded">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
 
-        {/* Chart */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h2 className="text-xl font-bold mb-4">Overall Progress</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={[] /* Wire up later */}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <TooltipRecharts />
-              <Line type="monotone" dataKey="realised" stroke="#34D399" name="Realised" strokeWidth={2} />
-              <Line type="monotone" dataKey="unrealised" stroke="#60A5FA" name="Unrealised" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Realised P/L</label>
+                  <input
+                    type="number"
+                    name="realisedPL"
+                    value={formData.realisedPL}
+                    onChange={handleFormChange}
+                    onWheel={(e) => e.target.blur()}
+                    placeholder="Realised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Unrealised P/L</label>
+                  <input
+                    type="number"
+                    name="unrealisedPL"
+                    value={formData.unrealisedPL}
+                    onChange={handleFormChange}
+                    placeholder="Paper Realised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Offset</label>
+                  <input
+                    type="number"
+                    name="offset"
+                    value={formData.offset}
+                    onChange={handleFormChange}
+                    style={{ width: "100px" }}
+                    placeholder="Offset"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Paper Realised P/L</label>
+                  <input
+                    type="number"
+                    name="paperRealisedPL"
+                    value={formData.paperRealisedPL}
+                    onChange={handleFormChange}
+                    placeholder="Paper Realised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Paper Unrealised P/L</label>
+                  <input
+                    type="number"
+                    name="paperUnRealisedPL"
+                    value={formData.paperUnRealisedPL}
+                    onChange={handleFormChange}
+                    placeholder="Paper Unrealised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+              </div>
+              <button onClick={handleSubmitSnapshot} className="mt-4 px-4 py-2 bg-cyan-700 text-white rounded hover:bg-cyan-500">
+                Save Snapshot
+              </button>
+            </div>
+          )}
 
-        {/* Back link */}
-        <div className="mt-6">
-          <Link to="/" className="px-4 py-2 rounded-lg mt-8 transition-colors duration-300 bg-cyan-700 text-white hover:bg-cyan-400">
-            Back to Dashboard
-          </Link>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardContent className="text-center">
+                <h2 className="text-sm text-gray-500">Weekly Unrealised</h2>
+                <p className={`text-2xl font-semibold ${weeklyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {formatCurrency(weeklyUnrealised, "GBP")}
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="text-center">
+                <h2 className="text-sm text-gray-500">Monthly Unrealised</h2>
+                <p className={`text-2xl font-semibold ${monthlyUnrealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {formatCurrency(monthlyUnrealised, "GBP")}
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="text-center">
+                <h2 className="text-sm text-gray-500">Weekly Realised</h2>
+                <p className={`text-2xl font-semibold ${weeklyRealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {formatCurrency(weeklyRealised, "GBP")}
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="text-center">
+                <h2 className="text-sm text-gray-500">Monthly Realised</h2>
+                <p className={`text-2xl font-semibold ${monthlyRealised >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {formatCurrency(monthlyRealised, "GBP")}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Chart */}
+          <div className="bg-white rounded-xl p-6 shadow">
+            <h2 className="text-xl font-bold mb-4">Overall Progress</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={[] /* Wire up later */}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <TooltipRecharts />
+                <Line type="monotone" dataKey="realised" stroke="#34D399" name="Realised" strokeWidth={2} />
+                <Line type="monotone" dataKey="unrealised" stroke="#60A5FA" name="Unrealised" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Back link */}
+          <div className="mt-6">
+            <Link to="/" className="px-4 py-2 rounded-lg mt-8 transition-colors duration-300 bg-cyan-700 text-white hover:bg-cyan-400">
+              Back to Dashboard
+            </Link>
+          </div>
+          <PerformanceTable data={performanceData} onDelete={handleDelete} />
         </div>
-        <PerformanceTable data={performanceData} onDelete={handleDelete} />
       </div>
-    </div>
+    </>
   );
 };
 

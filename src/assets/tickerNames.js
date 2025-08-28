@@ -40,6 +40,7 @@ const tickerNames = {
     WMB: "Williams Companies Inc",
     WM: "Waste Management Inc",
     BABA: "Alibaba Group Holding Ltd",
+    WMT: "Walmart Inc",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",
