@@ -25,6 +25,7 @@ const tickerNames = {
     CCL: "Carnival plc",
     IMB: "Imperial Brands",
     LGEN: "Legal & General Group Plc",
+    GLEN: "Glencore plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -52,6 +53,7 @@ const tickerNames = {
     META: "Meta Platforms Inc",
     CSCO: "Cisco Systems Inc",
     EXPE: "Expedia Group Inc",
+    PEP: "PepsiCo Inc",
   },
   EPA: {
     EL: "EssilorLuxottica",

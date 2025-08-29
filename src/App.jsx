@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import TradeDetails from "./pages/TradeDetails";
 import ProgressTracker from "./pages/ProgressTracker";
+import StrategyPage from "./pages/StrategyPage";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -41,6 +42,22 @@ function App() {
                   element={
                     <PrivateRoute>
                       <ProgressTracker />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/strategy/:id"
+                  element={
+                    <PrivateRoute>
+                      <StrategyPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/strategy"
+                  element={
+                    <PrivateRoute>
+                      <StrategyPage />
                     </PrivateRoute>
                   }
                 />
