@@ -7,6 +7,7 @@ import { getTrades, getUnrealisedPL } from "../services/stockService";
 import { formatCurrency } from "../utils/formatCurrency";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
+import utc from "dayjs/plugin/utc";
 import toast from "react-hot-toast";
 import AssetTypeSwitch from "@/components/AssetTypeSwitch";
 import { PackagePlus } from "lucide-react";
@@ -17,6 +18,7 @@ import TopNavBar from "@/components/TopNavBar";
 import RoundIconButton from "@/components/RoundIconButton";
 
 dayjs.extend(isoWeek);
+dayjs.extend(utc);
 
 const ProgressTracker = () => {
   const [trades, setTrades] = useState([]);
@@ -70,8 +72,8 @@ const ProgressTracker = () => {
           const weekNumber = item.interval === "weekly" ? dayjs(item.periodStart).isoWeek() : null;
           const dateRange =
             item.interval === "monthly"
-              ? dayjs(item.periodStart).format("MMM YYYY")
-              : `${dayjs(item.periodStart).format("DD MMM")} - ${dayjs(item.periodEnd).format("DD MMM")}`;
+              ? dayjs(item.periodStart).utc().format("MMM YYYY")
+              : `${dayjs(item.periodStart).utc().format("DD MMM")} - ${dayjs(item.periodEnd).utc().format("DD MMM")}`;
 
           return {
             _id: item._id,
@@ -122,10 +124,13 @@ const ProgressTracker = () => {
 
   const handleSubmitSnapshot = async () => {
     try {
-      const payload = { ...formData, offset: Number(formData.offset) };
+      // Just use offset from formData, default 0
+      const offset = Number(formData.offset);
+
+      const payload = { ...formData, offset };
+
       const data = await createPerformanceSnapshot(payload);
       toast.success("Performance snapshot saved!");
-      console.log("Saved:", data);
       setShowForm(false);
 
       // Add the new snapshot to performanceData
@@ -148,8 +153,9 @@ const ProgressTracker = () => {
         },
       ]);
     } catch (err) {
+      const apiMessage = err?.response?.data?.message || err?.message || "Failed to save snapshot.";
+      toast.error(apiMessage);
       console.error(err);
-      toast.error("Failed to save snapshot.");
     }
   };
 
@@ -209,6 +215,17 @@ const ProgressTracker = () => {
                 </div>
 
                 <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Unrealised P/L</label>
+                  <input
+                    type="number"
+                    name="unrealisedPL"
+                    value={formData.unrealisedPL}
+                    onChange={handleFormChange}
+                    placeholder="Paper Realised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">Realised P/L</label>
                   <input
                     type="number"
@@ -221,18 +238,7 @@ const ProgressTracker = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Unrealised P/L</label>
-                  <input
-                    type="number"
-                    name="unrealisedPL"
-                    value={formData.unrealisedPL}
-                    onChange={handleFormChange}
-                    placeholder="Paper Realised PL"
-                    className="border p-2 rounded"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Offset</label>
+                  <label className="block text-sm font-medium text-gray-700">Offset (this week = 1)</label>
                   <input
                     type="number"
                     name="offset"
@@ -244,17 +250,6 @@ const ProgressTracker = () => {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">Paper Realised P/L</label>
-                  <input
-                    type="number"
-                    name="paperRealisedPL"
-                    value={formData.paperRealisedPL}
-                    onChange={handleFormChange}
-                    placeholder="Paper Realised PL"
-                    className="border p-2 rounded"
-                  />
-                </div>
-                <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">Paper Unrealised P/L</label>
                   <input
                     type="number"
@@ -262,6 +257,17 @@ const ProgressTracker = () => {
                     value={formData.paperUnRealisedPL}
                     onChange={handleFormChange}
                     placeholder="Paper Unrealised PL"
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700">Paper Realised P/L</label>
+                  <input
+                    type="number"
+                    name="paperRealisedPL"
+                    value={formData.paperRealisedPL}
+                    onChange={handleFormChange}
+                    placeholder="Paper Realised PL"
                     className="border p-2 rounded"
                   />
                 </div>

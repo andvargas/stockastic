@@ -5,6 +5,7 @@ import Modal from "../components/Modal";
 import AddSnapshotForm from "../components/AddSnapshotForm";
 import RoundIconButton from "../components/RoundIconButton";
 import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
+import { fetchSnapshotsByTrade } from "../services/snapshotService";
 import toast from "react-hot-toast";
 import Tooltip from "../components/Tooltip";
 import JournalEntries from "../components/JournalEntries";
@@ -51,6 +52,25 @@ const TradeDetails = () => {
     fetchTrade();
     console.log("Fetching trade details for ID:", id);
   }, [id]);
+
+  useEffect(() => {
+    if (!trade?._id) return;
+    const fetchSnapshots = async () => {
+      try {
+        const snapshots = await fetchSnapshotsByTrade(trade._id);
+        // to log the latest snapshot:
+        if (snapshots.length > 0) {
+          // Sort by timestamp descending
+          const sorted = [...snapshots].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          const latest = sorted[0];
+          console.log("Latest snapshot:", latest.timestamp, "Price:", latest.price);
+        }
+      } catch (err) {
+        console.error("Failed to fetch snapshots:", err);
+      }
+    };
+    fetchSnapshots();
+  }, [trade]);
 
   const handleSave = async () => {
     if (!hasPermission(user, ["admin", "trader"])) {

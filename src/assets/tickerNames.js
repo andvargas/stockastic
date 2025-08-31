@@ -26,6 +26,8 @@ const tickerNames = {
     IMB: "Imperial Brands",
     LGEN: "Legal & General Group Plc",
     GLEN: "Glencore plc",
+    SVT: "Severn Trent",
+    DGE: "Diageo plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -42,6 +44,7 @@ const tickerNames = {
     WM: "Waste Management Inc",
     BABA: "Alibaba Group Holding Ltd",
     WMT: "Walmart Inc",
+    DE: "Deere & Co",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",
