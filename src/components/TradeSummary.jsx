@@ -4,12 +4,10 @@ import dayjs from "dayjs";
 import currencyRates from "../utils/currencyRates";
 import { formatCurrency } from "../utils/formatCurrency";
 
-const TradeSummary = ({ trade }) => {
+const TradeSummary = ({ trade, highestPrice, latestPrice }) => {
   const [adjustments, setAdjustments] = useState([]);
-  const [currentPrice, setCurrentPrice] = useState(null);
-  const [manualPrice, setManualPrice] = useState(null);
-  const [highestClosePrice, setHighestClosePrice] = useState(trade.highestClosePrice || null);
 
+  // Fetch adjustments only
   const fetchAdjustments = async () => {
     try {
       const res = await api.get(`/trades/${trade._id}/adjustments`);
@@ -19,40 +17,11 @@ const TradeSummary = ({ trade }) => {
     }
   };
 
-  const fetchCurrentPrice = async () => {
-    try {
-      const res = await api.get(`/open-positions`);
-      const position = res.data.find((p) => p.symbol === trade.symbol);
-      setCurrentPrice(position?.currentPrice || trade.closePrice || null);
-    } catch (error) {
-      console.error("Error fetching current price:", error);
-    }
-  };
-
-  const fetchManualPrice = async () => {
-    try {
-      const res = await api.get(`/trades/${trade._id}`);
-      setManualPrice(res.data.manualCurrentPrice || null);
-    } catch (err) {
-      console.error("Error fetching manual price:", err);
-    }
-  };
-
-  const refreshData = () => {
-    fetchAdjustments();
-    if (trade.status === "Open") {
-      fetchCurrentPrice();
-      fetchManualPrice();
-    } else {
-      setCurrentPrice(trade.closePrice);
-    }
-  };
-
   useEffect(() => {
     if (trade._id) {
-      refreshData();
+      fetchAdjustments();
       const dailyInterval = setInterval(() => {
-        refreshData();
+        fetchAdjustments();
       }, 3600000);
       return () => clearInterval(dailyInterval);
     }
@@ -65,60 +34,48 @@ const TradeSummary = ({ trade }) => {
   const totalAdjustments = trade.status === "Open" ? adjustments.reduce((sum, adj) => sum + adj.amount, 0) : trade.adjustmentsTotal || 0;
   const overnightInterestTotal = trade.status === "Open" ? trade.overnightInterest * daysPassed : trade.overnightInterestTotal || 0;
 
-  const effectivePrice = manualPrice !== null ? manualPrice : currentPrice;
+  // Use latestPrice for current/closed price
+  const effectivePrice = latestPrice !== null ? latestPrice : trade.closePrice;
 
   const grossProfit =
     trade.status === "Open" ? (effectivePrice !== null ? (effectivePrice - trade.entryPrice) * trade.quantity * tradeRate : 0) : trade.pnl ?? 0;
 
   const netProfit = trade.status === "Open" ? grossProfit + totalAdjustments - overnightInterestTotal : trade.netProfit || 0;
 
-  const handleSetManualPrice = async () => {
-    const input = prompt("Enter current price:");
-    if (input && !isNaN(input)) {
-      const parsedPrice = parseFloat(input);
-      setManualPrice(parsedPrice);
-      await api.post(`/trades/${trade._id}/set-manual-price`, { price: parsedPrice });
-    }
-  };
-
-  const handleSetHighestClosePrice = async () => {
-    const input = prompt("Enter highest close price (on 15 min. timeframe):");
-    if (input && !isNaN(input)) {
-      const parsedPrice = parseFloat(input);
-      await api.post(`/trades/${trade._id}/set-highest-close-price`, { highestPrice: parsedPrice });
-      setHighestClosePrice(parsedPrice);
-    }
-  };
-
   return (
-    <div className="bg-white border rounded p-4 shadow-sm">
+    <div className="bg-gray-50 border rounded p-4 shadow-sm">
       <h2 className="text-xl font-semibold mb-4">Trade Summary</h2>
 
-      <div className="gap-3">
-        <p>
-          {trade.status === "Open" ? "Current Price: " : "Closed Price: "}
-          {effectivePrice !== null ? formatCurrency(effectivePrice, trade.currency) : "Not available"}
-        </p>
-        {trade.status === "Open" && (
-          <button onClick={handleSetManualPrice} className="px-2 py-0.5 border rounded text-sm hover:bg-gray-200">
-            Set Price
-          </button>
-        )}
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          <span>{trade.status === "Open" ? "Current Price:" : "Closed Price:"}</span>
+          <span>{latestPrice !== null ? formatCurrency(latestPrice, trade.currency) : "Not available"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Highest Snapshot Price:</span>
+          <span>{highestPrice !== null ? formatCurrency(highestPrice, trade.currency) : "Not set"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Days Open:</span>
+          <span>{daysPassed}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Gross Profit:</span>
+          <span>£{typeof grossProfit === "number" ? grossProfit.toFixed(2) : "0.00"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Adjustments Total:</span>
+          <span>£{totalAdjustments.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Overnight Interest Total:</span>
+          <span>£{overnightInterestTotal.toFixed(2)}</span>
+        </div>
+        <div className={`flex justify-between font-bold text-lg mt-4 ${netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+          <span>Net Profit:</span>
+          <span>£{typeof netProfit === "number" ? netProfit.toFixed(2) : "0.00"}</span>
+        </div>
       </div>
-      <p>Highest Close Price: {highestClosePrice ? formatCurrency(highestClosePrice, trade.currency) : "Not set"}</p>
-      {trade.status === "Open" && (
-        <button onClick={handleSetHighestClosePrice} className="px-2 py-0.5 border rounded text-sm hover:bg-gray-200">
-          Set Highest Close Price
-        </button>
-      )}
-
-      <p>Days Open: {daysPassed}</p>
-      <p className="font-medium">Gross Profit: £{typeof grossProfit === "number" ? grossProfit.toFixed(2) : "0.00"}</p>
-      <p>Adjustments Total: £{totalAdjustments.toFixed(2)}</p>
-      <p>Overnight Interest Total: £{overnightInterestTotal.toFixed(2)}</p>
-      <p className={`font-bold text-lg mt-4 ${netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
-        Net Profit: £{typeof netProfit === "number" ? netProfit.toFixed(2) : "0.00"}
-      </p>
     </div>
   );
 };

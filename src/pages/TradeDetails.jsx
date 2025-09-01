@@ -29,6 +29,8 @@ const TradeDetails = () => {
   const [tempValue, setTempValue] = useState("");
   const [showCloseTradeModal, setShowCloseTradeModal] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
+  const [highestSnapshotPrice, setHighestSnapshotPrice] = useState(null);
+  const [latestPrice, setLatestPrice] = useState(null);
 
   const handleCloseTrade = () => {
     if (!hasPermission(user, ["admin", "trader"])) {
@@ -58,11 +60,15 @@ const TradeDetails = () => {
     const fetchSnapshots = async () => {
       try {
         const snapshots = await fetchSnapshotsByTrade(trade._id);
-        // to log the latest snapshot:
         if (snapshots.length > 0) {
-          // Sort by timestamp descending
+          // Find the highest price among snapshots
+          const highest = Math.max(...snapshots.map((snap) => snap.price));
+          setHighestSnapshotPrice(highest);
+
+          // (Optional) Log the latest snapshot as before
           const sorted = [...snapshots].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
           const latest = sorted[0];
+          setLatestPrice(latest.price);
           console.log("Latest snapshot:", latest.timestamp, "Price:", latest.price);
         }
       } catch (err) {
@@ -365,11 +371,7 @@ const TradeDetails = () => {
           {/* Right side — 1/3 */}
 
           <div className="space-y-4">
-            <TradeSummary trade={trade} />
-            {/* <h3 className="text-lg font-semibold">Extras - Sample widget</h3> 
-          <div className="p-4 border rounded bg-gray-50 shadow-sm">
-            <p className="text-sm text-gray-600">Add new widgets or components here — e.g. JournalEntries, trade notes, analytics, charts etc.</p>
-          </div> */}
+            <TradeSummary trade={trade} highestPrice={highestSnapshotPrice} latestPrice={latestPrice} />
 
             <JournalEntries tradeId={trade._id} />
             <AdjustmentsWidget tradeId={trade._id} />

@@ -57,6 +57,7 @@ const tickerNames = {
     CSCO: "Cisco Systems Inc",
     EXPE: "Expedia Group Inc",
     PEP: "PepsiCo Inc",
+    FCFS: "First Cash Financial Services Inc",
   },
   EPA: {
     EL: "EssilorLuxottica",
@@ -66,6 +67,7 @@ const tickerNames = {
   },
   ETR: {
     LHA: "Deutsche Lufthansa",
+    GYC: "Grand City Properties",
   },
   WBAG: {
     OMVV: "OMV",
