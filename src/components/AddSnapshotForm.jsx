@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { addSnapshot } from "../services/stockService";
 
-const AddSnapshotForm = ({ tradeId, onClose }) => {
+const AddSnapshotForm = ({ tradeId, onClose, latestPrice }) => {
   const [price, setPrice] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString().slice(0, 16)); // Default to now (yyyy-MM-ddTHH:mm)
 
@@ -25,6 +25,7 @@ const AddSnapshotForm = ({ tradeId, onClose }) => {
         <input
           type="number"
           step="0.01"
+          placeholder={latestPrice ? `Latest: $${latestPrice}` : "Enter price"}
           value={price}
           onChange={(e) => setPrice(e.target.value)}
           required

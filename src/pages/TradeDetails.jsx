@@ -385,7 +385,7 @@ const TradeDetails = () => {
           ← Back to Dashboard
         </button>
         <Modal isOpen={isSnapshotModalOpen} onClose={() => setIsSnapshotModalOpen(false)} title="Add Snapshot">
-          <AddSnapshotForm tradeId={trade._id} onClose={() => setIsSnapshotModalOpen(false)} />
+          <AddSnapshotForm tradeId={trade._id} onClose={() => setIsSnapshotModalOpen(false)} latestPrice={latestPrice} />
         </Modal>
       </div>
     </>

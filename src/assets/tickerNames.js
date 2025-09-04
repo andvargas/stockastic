@@ -45,6 +45,7 @@ const tickerNames = {
     BABA: "Alibaba Group Holding Ltd",
     WMT: "Walmart Inc",
     DE: "Deere & Co",
+    DKS: "Dick's Sporting Goods Inc",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",
@@ -58,6 +59,7 @@ const tickerNames = {
     EXPE: "Expedia Group Inc",
     PEP: "PepsiCo Inc",
     FCFS: "First Cash Financial Services Inc",
+    MCHP: "Microchip Technology Inc",
   },
   EPA: {
     EL: "EssilorLuxottica",
