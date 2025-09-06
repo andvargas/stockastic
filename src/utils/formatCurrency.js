@@ -3,6 +3,7 @@ const currencySymbols = {
   GBX: "p",
   USD: "$",
   EUR: "€",
+  CHF: "CHF ",
 };
 
 export function formatCurrency(value, currency = "GBP", decimals = 2) {

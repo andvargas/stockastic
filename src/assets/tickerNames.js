@@ -28,6 +28,7 @@ const tickerNames = {
     GLEN: "Glencore plc",
     SVT: "Severn Trent",
     DGE: "Diageo plc",
+    CMG: "Compass Group plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -63,6 +64,10 @@ const tickerNames = {
   },
   EPA: {
     EL: "EssilorLuxottica",
+  },
+  SIX: {
+    SIKA: "Sika AG",
+    NESN: "Nestlé SA",
   },
   XAMS: {
     HEIA: "Heineken",

@@ -130,7 +130,7 @@ const TradeDetails = () => {
     { key: "ticker", label: "Ticker", type: "text", inputClass: "w-24", transform: (v) => v.toUpperCase() },
     { key: "market", label: "Market", type: "text", inputClass: "w-24" },
     { key: "quantity", label: "Quantity", type: "number", inputClass: "w-24" },
-    { key: "currency", label: "Currency", type: "select", inputClass: "w-24", options: ["GBP", "GBX", "USD", "EUR"] },
+    { key: "currency", label: "Currency", type: "select", inputClass: "w-24", options: ["GBP", "GBX", "USD", "EUR", "CHF"] },
     { key: "entryPrice", label: "Entry Price", type: "number", inputClass: "w-24" },
     { key: "date", label: "Entry Date", type: "date", inputClass: "w-40" },
     { key: "stopLoss", label: "Stop Loss", type: "number", inputClass: "w-24" },
@@ -226,7 +226,8 @@ const TradeDetails = () => {
       return;
     }
 
-    const { stopLoss, takeProfit, quantity } = calculateTradeLevels(parseFloat(entryPrice), parseFloat(atr), currency);
+    // ✅ Pass in currencyRates as the 4th parameter
+    const { stopLoss, takeProfit, quantity } = calculateTradeLevels(parseFloat(entryPrice), parseFloat(atr), currency, currencyRates);
 
     const confirmUpdate = window.confirm(
       `New values:\nStop Loss: ${stopLoss}\nTake Profit: ${takeProfit}\nQuantity: ${quantity}\n\nUpdate trade with these values?`
@@ -272,7 +273,12 @@ const TradeDetails = () => {
               <RoundIconButton onClick={handleReRun} icon={RefreshCw} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-black" />
             </Tooltip>
             <Tooltip tooltipText="Close this trade" position="bottom">
-              <RoundIconButton onClick={handleCloseTrade} icon={CircleX} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-black" />
+              <RoundIconButton
+                onClick={handleCloseTrade}
+                icon={CircleX}
+                color="bg-gray-100 hover:bg-gray-300"
+                iconClassName="w-8 h-8 text-teal-600"
+              />
             </Tooltip>
             <Tooltip tooltipText="Delete share..." position="bottom">
               <RoundIconButton onClick={handleDelete} icon={Trash} color="bg-gray-100 hover:bg-gray-300" iconClassName="w-8 h-8 text-red-700" />

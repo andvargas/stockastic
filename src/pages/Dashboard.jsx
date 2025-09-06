@@ -17,6 +17,7 @@ import TopNavBar from "../components/TopNavBar";
 import DateCard from "../components/DateCard";
 import { useDashboardFilters } from "../contexts/DashboardFilterContext";
 import { getLatestSnapshotPrice, getHighestSnapshotPrice } from "../services/snapshotService";
+import api from "../services/api";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -25,6 +26,7 @@ const Dashboard = () => {
   const [selectedTradeId, setSelectedTradeId] = useState(null);
   const [statusFilter, setStatusFilter] = useState(null);
   const [changeDataMap, setChangeDataMap] = useState({});
+  const [currencyRates, setCurrencyRates] = useState({});
 
   const {
     searchTerm,
@@ -73,6 +75,27 @@ const Dashboard = () => {
       fetchChangeData();
     }
   }, [trades]);
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await api.get("/currency-rates/latest");
+        const data = res.data;
+        const rates = data.rates || {};
+
+        // Ensure GBX exists (backend should handle, but safe fallback)
+        if (rates.GBP && !rates.GBX) {
+          rates.GBX = rates.GBP * 100;
+        }
+
+        setCurrencyRates(rates);
+      } catch (err) {
+        console.error("Failed to fetch currency rates", err);
+      }
+    };
+
+    fetchRates();
+  }, []);
 
   const handleAddTrade = async (newTrade) => {
     try {
@@ -165,11 +188,10 @@ const Dashboard = () => {
 
     let latestPrice;
     if (trade.status === "Closed") {
-      latestPrice = trade.closePrice; // closed → final price is close price
+      latestPrice = trade.closePrice;
     } else {
       latestPrice = await getLatestSnapshotPrice(trade._id);
       if (!latestPrice) {
-        // fallback if no snapshots yet
         latestPrice = trade.manualCurrentPrice ?? trade.entryPrice;
       }
     }
@@ -180,11 +202,9 @@ const Dashboard = () => {
       return { change: null, percentChange: null, currency: "GBP" };
     }
 
-    // Calculate delta vs peak
     const perShareDelta = isLong ? latestPrice - peakPrice : peakPrice - latestPrice;
     const change = perShareDelta * qty * rate;
 
-    // Base % on the *peak value in GBP*
     const peakValueGBP = peakPrice * qty * rate;
     const percentChange = peakValueGBP ? (change / peakValueGBP) * 100 : null;
 
@@ -310,7 +330,7 @@ const Dashboard = () => {
               <Tooltip tooltipText={showConsidering ? "Show Active" : "Show Considering"}>
                 <RadarIcon
                   onClick={() => setShowConsidering(!showConsidering)}
-                  className="h-6 w-6 cursor-pointer hover:text-lime-600 transition-colors duration-300"
+                  className={`h-6 w-6 cursor-pointer transition-colors duration-300 ${showConsidering ? "text-teal-500" : "hover:text-lime-600"}`}
                 />
               </Tooltip>
             </div>
@@ -384,7 +404,7 @@ const Dashboard = () => {
                         {trade.type}
                       </span>
                       <span>
-                        {trade.quantity} @ {formatCurrency(trade.entryPrice, trade.currency)}
+                        {trade.quantity} @ {trade.entryPrice}
                       </span>
                     </td>
                     <td className="border-b p-2 text-right">

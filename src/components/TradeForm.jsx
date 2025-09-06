@@ -1,11 +1,8 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import currencyRates from "../utils/currencyRates";
-
-const avgSL = 1.56;
-const avgTP = 3.54;
-const accRiskTrade = 100;
+import api from "@/services/api";
+import { calculateTradeLevels } from "../utils/tradeCalculations";
 
 const tradeSchema = Yup.object().shape({
   market: Yup.string().required("Market is required"),
@@ -23,21 +20,32 @@ const tradeSchema = Yup.object().shape({
 });
 
 const TradeForm = ({ onAddTrade, onClose }) => {
-  const calculateTradeLevels = (setFieldValue, values, field, value) => {
-    const atrValue = field === "atr" ? parseFloat(value) : parseFloat(values.atr);
-    const entryPriceValue = field === "entryPrice" ? parseFloat(value) : parseFloat(values.entryPrice);
+  const [currencyRates, setCurrencyRates] = useState({});
 
-    if (!isNaN(atrValue) && !isNaN(entryPriceValue)) {
-      const stopLoss = (entryPriceValue - avgSL * atrValue).toFixed(4);
-      const takeProfit = (entryPriceValue + avgTP * atrValue).toFixed(4);
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const res = await api.get("/currency-rates/latest");
+        setCurrencyRates(res.data.rates || {});
+      } catch (err) {
+        console.error("Failed to fetch currency rates", err);
+      }
+    };
+    fetchRates();
+  }, []);
+
+  const handleFieldChange = (field, value, setFieldValue, values) => {
+    setFieldValue(field, value);
+
+    const entryPriceValue = field === "entryPrice" ? parseFloat(value) : parseFloat(values.entryPrice);
+    const atrValue = field === "atr" ? parseFloat(value) : parseFloat(values.atr);
+    const currency = values.currency;
+
+    if (!isNaN(entryPriceValue) && !isNaN(atrValue) && currency) {
+      const { stopLoss, takeProfit, quantity } = calculateTradeLevels(entryPriceValue, atrValue, currency, currencyRates);
 
       setFieldValue("stopLoss", stopLoss);
       setFieldValue("takeProfit", takeProfit);
-    }
-    if (!isNaN(atrValue)) {
-      const currencyRate = currencyRates[values.currency] || 1;
-      const riskPerUnitGBP = avgSL * atrValue * currencyRate;
-      const quantity = Math.floor(accRiskTrade / riskPerUnitGBP);
       setFieldValue("quantity", quantity);
     }
   };
@@ -58,7 +66,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
         status: "Open",
         atr: "",
         overnightInterest: "",
-        strategy: "2.2",
+        strategy: "2.3",
       }}
       validationSchema={tradeSchema}
       onSubmit={async (values, { resetForm }) => {
@@ -71,13 +79,10 @@ const TradeForm = ({ onAddTrade, onClose }) => {
     >
       {({ setFieldValue, values }) => {
         useEffect(() => {
-          if (values.market === "LON") {
-            setFieldValue("currency", "GBX");
-          } else if (["NASDAQ", "NYSE"].includes(values.market)) {
-            setFieldValue("currency", "USD");
-          } else if (["ETR", "EPA", "XAMS", "WBAG"].includes(values.market)) {
-            setFieldValue("currency", "EUR");
-          }
+          if (values.market === "LON") setFieldValue("currency", "GBX");
+          else if (["NASDAQ", "NYSE"].includes(values.market)) setFieldValue("currency", "USD");
+          else if (["ETR", "EPA", "XAMS", "WBAG"].includes(values.market)) setFieldValue("currency", "EUR");
+          else if (["SIX"].includes(values.market)) setFieldValue("currency", "CHF");
         }, [values.market, setFieldValue]);
 
         return (
@@ -93,6 +98,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="EPA">Euronext Paris (EPA)</option>
                   <option value="XAMS">Euronext Amsterdam (XAMS)</option>
                   <option value="WBAG">Wiener Börse (WBAG)</option>
+                  <option value="SIX">SIX Swiss Exchange (SIX)</option>
                 </Field>
                 <ErrorMessage name="market" component="div" className="text-red-500 text-sm" />
               </div>
@@ -130,11 +136,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   type="number"
                   name="atr"
                   className="border p-2 w-full"
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFieldValue("atr", value);
-                    calculateTradeLevels(setFieldValue, values, "atr", value);
-                  }}
+                  onChange={(e) => handleFieldChange("atr", e.target.value, setFieldValue, values)}
                 />
                 <ErrorMessage name="atr" component="div" className="text-red-500 text-sm" />
               </div>
@@ -173,11 +175,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   type="number"
                   name="entryPrice"
                   className="border p-2 w-full"
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFieldValue("entryPrice", value);
-                    calculateTradeLevels(setFieldValue, values, "entryPrice", value);
-                  }}
+                  onChange={(e) => handleFieldChange("entryPrice", e.target.value, setFieldValue, values)}
                 />
                 <ErrorMessage name="entryPrice" component="div" className="text-red-500 text-sm" />
               </div>
@@ -198,6 +196,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                 <Field type="number" name="takeProfit" className="border p-2 w-full" />
               </div>
             </div>
+
             <div>
               <Field name="status">
                 {({ field, form }) => (
