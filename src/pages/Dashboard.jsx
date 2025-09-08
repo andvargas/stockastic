@@ -9,7 +9,6 @@ import { addNote } from "../services/journalService";
 import toast from "react-hot-toast";
 import AddJournalEntryForm from "../components/AddJournalEntryForm";
 import { RadarIcon, CoinsIcon, BanknoteIcon, Info, CalendarDaysIcon } from "lucide-react";
-import currencyRates from "../utils/currencyRates";
 import { formatCurrency } from "../utils/formatCurrency";
 import { useAuth } from "../contexts/AuthContext";
 import { hasPermission } from "../utils/roleUtils";

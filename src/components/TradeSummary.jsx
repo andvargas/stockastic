@@ -3,9 +3,8 @@ import api from "../services/api";
 import dayjs from "dayjs";
 import { formatCurrency } from "../utils/formatCurrency";
 
-const TradeSummary = ({ trade, highestPrice, latestPrice }) => {
+const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) => {
   const [adjustments, setAdjustments] = useState([]);
-  const [currencyRates, setCurrencyRates] = useState({});
 
   // Fetch adjustments only
   const fetchAdjustments = async () => {
@@ -17,30 +16,12 @@ const TradeSummary = ({ trade, highestPrice, latestPrice }) => {
     }
   };
 
-  // Fetch currency rates
-  const fetchCurrencyRates = async () => {
-    try {
-      const res = await api.get("/currency-rates/latest");
-      const data = res.data;
-      const rates = data.rates;
-
-      // Add GBX
-      rates.GBX = rates.GBP * 100;
-
-      setCurrencyRates(rates);
-    } catch (err) {
-      console.error("Failed to fetch currency rates", err);
-    }
-  };
-
   useEffect(() => {
     if (trade._id) {
       fetchAdjustments();
-      fetchCurrencyRates();
 
       const interval = setInterval(() => {
         fetchAdjustments();
-        fetchCurrencyRates();
       }, 3600000); // update every hour
 
       return () => clearInterval(interval);
@@ -50,7 +31,7 @@ const TradeSummary = ({ trade, highestPrice, latestPrice }) => {
   const endDate = trade.status === "Open" ? dayjs() : dayjs(trade.closeDate);
   const daysPassed = endDate.diff(dayjs(trade.date), "day");
 
-  // Use fetched rates
+  // Use passed currency rates
   const tradeRate = currencyRates[trade.currency] || 1;
 
   const totalAdjustments = trade.status === "Open" ? adjustments.reduce((sum, adj) => sum + adj.amount, 0) : trade.adjustmentsTotal || 0;

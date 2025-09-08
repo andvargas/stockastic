@@ -6,6 +6,7 @@ import AddSnapshotForm from "../components/AddSnapshotForm";
 import RoundIconButton from "../components/RoundIconButton";
 import { getTradeById, updateTrade, deleteTrade } from "../services/stockService";
 import { fetchSnapshotsByTrade } from "../services/snapshotService";
+import api from "../services/api";
 import toast from "react-hot-toast";
 import Tooltip from "../components/Tooltip";
 import JournalEntries from "../components/JournalEntries";
@@ -31,6 +32,23 @@ const TradeDetails = () => {
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [highestSnapshotPrice, setHighestSnapshotPrice] = useState(null);
   const [latestPrice, setLatestPrice] = useState(null);
+  const [currencyRates, setCurrencyRates] = useState({});
+
+  // Fetch currency rates
+  const fetchCurrencyRates = async () => {
+    try {
+      const res = await api.get("/currency-rates/latest");
+      const data = res.data;
+      const rates = data.rates;
+
+      // Add GBX - not sure I need this here, I think this was causing the issue with currency conversion.
+      // rates.GBX = rates.GBP * 100;
+
+      setCurrencyRates(rates);
+    } catch (err) {
+      console.error("Failed to fetch currency rates", err);
+    }
+  };
 
   const handleCloseTrade = () => {
     if (!hasPermission(user, ["admin", "trader"])) {
@@ -52,7 +70,15 @@ const TradeDetails = () => {
 
   useEffect(() => {
     fetchTrade();
+    fetchCurrencyRates();
     console.log("Fetching trade details for ID:", id);
+
+    // Set up interval to update currency rates every hour
+    const interval = setInterval(() => {
+      fetchCurrencyRates();
+    }, 14400000); // update every 4 hours
+
+    return () => clearInterval(interval);
   }, [id]);
 
   useEffect(() => {
@@ -375,9 +401,8 @@ const TradeDetails = () => {
           </div>
 
           {/* Right side — 1/3 */}
-
           <div className="space-y-4">
-            <TradeSummary trade={trade} highestPrice={highestSnapshotPrice} latestPrice={latestPrice} />
+            <TradeSummary trade={trade} highestPrice={highestSnapshotPrice} latestPrice={latestPrice} currencyRates={currencyRates} />
 
             <JournalEntries tradeId={trade._id} />
             <AdjustmentsWidget tradeId={trade._id} />

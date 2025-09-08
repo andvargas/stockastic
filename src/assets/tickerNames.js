@@ -29,6 +29,7 @@ const tickerNames = {
     SVT: "Severn Trent",
     DGE: "Diageo plc",
     CMG: "Compass Group plc",
+    CCH: "Coca-Cola HBC AG",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
