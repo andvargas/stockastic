@@ -42,12 +42,25 @@ const TradeForm = ({ onAddTrade, onClose }) => {
     const currency = values.currency;
 
     if (!isNaN(entryPriceValue) && !isNaN(atrValue) && currency) {
-      const { stopLoss, takeProfit, quantity } = calculateTradeLevels(entryPriceValue, atrValue, currency, currencyRates);
+      const { stopLoss, takeProfit } = calculateTradeLevels(entryPriceValue, atrValue, currency, currencyRates);
 
       setFieldValue("stopLoss", stopLoss);
       setFieldValue("takeProfit", takeProfit);
-      setFieldValue("quantity", quantity);
     }
+  };
+
+  const getCurrency = (market, assetType) => {
+    if (market === "LON") {
+      // For CFD or Paper CFD, use GBP; otherwise use GBX
+      return assetType === "CFD" || assetType === "Paper CFD" ? "GBP" : "GBX";
+    } else if (["NASDAQ", "NYSE"].includes(market)) {
+      return "USD";
+    } else if (["ETR", "EPA", "XAMS", "WBAG"].includes(market)) {
+      return "EUR";
+    } else if (["SIX"].includes(market)) {
+      return "CHF";
+    }
+    return "GBX"; // default fallback
   };
 
   return (
@@ -79,11 +92,9 @@ const TradeForm = ({ onAddTrade, onClose }) => {
     >
       {({ setFieldValue, values }) => {
         useEffect(() => {
-          if (values.market === "LON") setFieldValue("currency", "GBX");
-          else if (["NASDAQ", "NYSE"].includes(values.market)) setFieldValue("currency", "USD");
-          else if (["ETR", "EPA", "XAMS", "WBAG"].includes(values.market)) setFieldValue("currency", "EUR");
-          else if (["SIX"].includes(values.market)) setFieldValue("currency", "CHF");
-        }, [values.market, setFieldValue]);
+          const newCurrency = getCurrency(values.market, values.assetType);
+          setFieldValue("currency", newCurrency);
+        }, [values.market, values.assetType, setFieldValue]);
 
         return (
           <Form className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto space-y-4">
