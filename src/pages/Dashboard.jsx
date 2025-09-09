@@ -82,11 +82,6 @@ const Dashboard = () => {
         const data = res.data;
         const rates = data.rates || {};
 
-        // Ensure GBX exists (backend should handle, but safe fallback)
-        if (rates.GBP && !rates.GBX) {
-          rates.GBX = rates.GBP * 100;
-        }
-
         setCurrencyRates(rates);
       } catch (err) {
         console.error("Failed to fetch currency rates", err);
@@ -176,8 +171,6 @@ const Dashboard = () => {
 
   const titleModifier = accountTypeFilter === "Real Money" ? "(RM)" : accountTypeFilter === "Paper Money" ? "(PM)" : "";
 
-  // inside Dashboard.jsx
-
   const getChangeData = async (trade) => {
     if (!trade.quantity) return { change: null, percentChange: null, currency: "GBP" };
 
@@ -202,9 +195,10 @@ const Dashboard = () => {
     }
 
     const perShareDelta = isLong ? latestPrice - peakPrice : peakPrice - latestPrice;
-    const change = perShareDelta * qty * rate;
+    // Fixed: divide by rate instead of multiply for consistent currency conversion
+    const change = (perShareDelta * qty) / rate;
 
-    const peakValueGBP = peakPrice * qty * rate;
+    const peakValueGBP = (peakPrice * qty) / rate;
     const percentChange = peakValueGBP ? (change / peakValueGBP) * 100 : null;
 
     return { change, percentChange, currency: "GBP" };

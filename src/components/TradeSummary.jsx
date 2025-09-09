@@ -56,7 +56,15 @@ const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) 
       <div className="space-y-2">
         <div className="flex justify-between">
           <span>{trade.status === "Open" ? "Current Price:" : "Closed Price:"}</span>
-          <span>{latestPrice !== null ? formatCurrency(latestPrice, trade.currency) : "Not available"}</span>
+          <span>
+            {trade.status === "Open"
+              ? latestPrice !== null
+                ? formatCurrency(latestPrice, trade.currency)
+                : "Not available"
+              : trade.closePrice
+              ? formatCurrency(trade.closePrice, trade.currency)
+              : "Not available"}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Highest Snapshot Price:</span>
