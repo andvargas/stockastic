@@ -5,14 +5,15 @@ const accRiskTrade = 100;
 export const calculateTradeLevels = (entryPrice, atr, currency, currencyRates) => {
   if (!entryPrice || !atr) return {};
 
-  // Normalize for GBX → GBP
-  const normalize = currency === "GBX" ? 0.01 : 1;
-
   const stopLoss = parseFloat((entryPrice - avgSL * atr).toFixed(4));
   const takeProfit = parseFloat((entryPrice + avgTP * atr).toFixed(4));
 
   const currencyRate = currencyRates[currency] || 1;
-  const riskPerUnitGBP = avgSL * atr * currencyRate * normalize;
+
+  const unitValueInGBP = 1 / currencyRate;
+
+  const riskPerUnitOriginal = avgSL * atr;
+  const riskPerUnitGBP = riskPerUnitOriginal * unitValueInGBP;
 
   const quantity = Math.floor(accRiskTrade / riskPerUnitGBP);
 

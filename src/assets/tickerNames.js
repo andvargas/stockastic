@@ -62,6 +62,7 @@ const tickerNames = {
     PEP: "PepsiCo Inc",
     FCFS: "First Cash Financial Services Inc",
     MCHP: "Microchip Technology Inc",
+    NVDA: "NVIDIA Corporation",
   },
   EPA: {
     EL: "EssilorLuxottica",

@@ -42,10 +42,11 @@ const TradeForm = ({ onAddTrade, onClose }) => {
     const currency = values.currency;
 
     if (!isNaN(entryPriceValue) && !isNaN(atrValue) && currency) {
-      const { stopLoss, takeProfit } = calculateTradeLevels(entryPriceValue, atrValue, currency, currencyRates);
+      const { stopLoss, takeProfit, quantity } = calculateTradeLevels(entryPriceValue, atrValue, currency, currencyRates);
 
       setFieldValue("stopLoss", stopLoss);
       setFieldValue("takeProfit", takeProfit);
+      setFieldValue("quantity", quantity);
     }
   };
 
