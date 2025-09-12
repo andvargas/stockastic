@@ -48,6 +48,8 @@ const tickerNames = {
     WMT: "Walmart Inc",
     DE: "Deere & Co",
     DKS: "Dick's Sporting Goods Inc",
+    JPM: "JP Morgan & Chase",
+    FIG: "Figma",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",

@@ -50,6 +50,27 @@ const TradeDetails = () => {
     }
   };
 
+  const fetchSnapshots = async () => {
+    if (!trade?._id) return;
+
+    try {
+      const snapshots = await fetchSnapshotsByTrade(trade._id);
+      if (snapshots.length > 0) {
+        // Find the highest price among snapshots
+        const highest = Math.max(...snapshots.map((snap) => snap.price));
+        setHighestSnapshotPrice(highest);
+
+        // (Optional) Log the latest snapshot as before
+        const sorted = [...snapshots].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const latest = sorted[0];
+        setLatestPrice(latest.price);
+        console.log("Latest snapshot:", latest.timestamp, "Price:", latest.price);
+      }
+    } catch (err) {
+      console.error("Failed to fetch snapshots:", err);
+    }
+  };
+
   const handleCloseTrade = () => {
     if (!hasPermission(user, ["admin", "trader"])) {
       toast.error("You don't have permission to close trades.");
@@ -82,25 +103,6 @@ const TradeDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!trade?._id) return;
-    const fetchSnapshots = async () => {
-      try {
-        const snapshots = await fetchSnapshotsByTrade(trade._id);
-        if (snapshots.length > 0) {
-          // Find the highest price among snapshots
-          const highest = Math.max(...snapshots.map((snap) => snap.price));
-          setHighestSnapshotPrice(highest);
-
-          // (Optional) Log the latest snapshot as before
-          const sorted = [...snapshots].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-          const latest = sorted[0];
-          setLatestPrice(latest.price);
-          console.log("Latest snapshot:", latest.timestamp, "Price:", latest.price);
-        }
-      } catch (err) {
-        console.error("Failed to fetch snapshots:", err);
-      }
-    };
     fetchSnapshots();
   }, [trade]);
 
@@ -416,7 +418,14 @@ const TradeDetails = () => {
           ← Back to Dashboard
         </button>
         <Modal isOpen={isSnapshotModalOpen} onClose={() => setIsSnapshotModalOpen(false)} title="Add Snapshot">
-          <AddSnapshotForm tradeId={trade._id} onClose={() => setIsSnapshotModalOpen(false)} latestPrice={latestPrice} />
+          <AddSnapshotForm
+            tradeId={trade._id}
+            onClose={() => {
+              setIsSnapshotModalOpen(false);
+              fetchSnapshots();
+            }}
+            latestPrice={latestPrice}
+          />
         </Modal>
       </div>
     </>
