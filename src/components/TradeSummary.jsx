@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import dayjs from "dayjs";
 import { formatCurrency } from "../utils/formatCurrency";
+import { FoldHorizontal } from "lucide-react";
 
 const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) => {
   const [adjustments, setAdjustments] = useState([]);
@@ -95,12 +96,11 @@ const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) 
           <span>{bestPriceValue}</span>
         </div>
         <div className="flex justify-between">
-          <span>Days Open:</span>
-          <span>{daysPassed}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Position Type:</span>
-          <span className={`font-semibold ${isShort ? "text-red-600" : "text-green-600"}`}>{trade.type || "Long"}</span>
+          <div className="flex items-center space-x-2">
+            <FoldHorizontal className="w-5 h-5 text-gray-400" />
+            <span>Days Open:</span>
+          </div>
+          <span className={`font-semibold ${daysPassed > 20 ? "text-red-600 font-bold" : "text-green-600"}`}>{daysPassed}</span>
         </div>
         <div className="flex justify-between">
           <span>Gross Profit:</span>

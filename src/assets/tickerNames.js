@@ -31,6 +31,8 @@ const tickerNames = {
     CMG: "Compass Group plc",
     CCH: "Coca-Cola HBC AG",
     NXT: "Next Plc",
+    SHEL: "Shell plc",
+    BT: "BT Group plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -53,6 +55,7 @@ const tickerNames = {
     FIG: "Figma",
     RSG: "Republic Services Inc",
     VTRS: "Viatris Inc",
+    BSX: "Boston Scientific Corporation",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",
@@ -68,6 +71,7 @@ const tickerNames = {
     FCFS: "First Cash Financial Services Inc",
     MCHP: "Microchip Technology Inc",
     NVDA: "NVIDIA Corporation",
+    ADP: "Automatic Data Processing Inc",
   },
   EPA: {
     EL: "EssilorLuxottica",
