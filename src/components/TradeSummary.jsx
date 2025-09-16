@@ -40,14 +40,38 @@ const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) 
 
   const effectivePrice = latestPrice !== null ? latestPrice : trade.closePrice;
 
+  // 🚨 FIX: Handle Long vs Short profit calculation
+  const isShort = trade.type?.toLowerCase().includes("short");
+
   const grossProfit =
     trade.status === "Open"
       ? effectivePrice !== null
-        ? (effectivePrice / tradeRate - trade.entryPrice / tradeRate) * trade.quantity
+        ? (() => {
+            // Convert prices to GBP for calculation
+            const effectivePriceGBP = effectivePrice / tradeRate;
+            const entryPriceGBP = trade.entryPrice / tradeRate;
+
+            // Calculate price difference based on position type
+            const priceDiff = isShort
+              ? entryPriceGBP - effectivePriceGBP // SHORT: profit when price goes down
+              : effectivePriceGBP - entryPriceGBP; // LONG: profit when price goes up
+
+            return priceDiff * trade.quantity;
+          })()
         : 0
       : trade.pnl ?? 0;
 
   const netProfit = trade.status === "Open" ? grossProfit + totalAdjustments - overnightInterestTotal : trade.netProfit || 0;
+
+  // 🎯 Update highest price logic for Short positions
+  const bestPriceLabel = isShort ? "Lowest Snapshot Price:" : "Highest Snapshot Price:";
+  const bestPriceValue = isShort
+    ? highestPrice !== null
+      ? `${formatCurrency(highestPrice, trade.currency)}`
+      : "Not set"
+    : highestPrice !== null
+    ? formatCurrency(highestPrice, trade.currency)
+    : "Not set";
 
   return (
     <div className="bg-gray-50 border rounded p-4 shadow-sm">
@@ -67,12 +91,16 @@ const TradeSummary = ({ trade, highestPrice, latestPrice, currencyRates = {} }) 
           </span>
         </div>
         <div className="flex justify-between">
-          <span>Highest Snapshot Price:</span>
-          <span>{highestPrice !== null ? formatCurrency(highestPrice, trade.currency) : "Not set"}</span>
+          <span>{bestPriceLabel}</span>
+          <span>{bestPriceValue}</span>
         </div>
         <div className="flex justify-between">
           <span>Days Open:</span>
           <span>{daysPassed}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Position Type:</span>
+          <span className={`font-semibold ${isShort ? "text-red-600" : "text-green-600"}`}>{trade.type || "Long"}</span>
         </div>
         <div className="flex justify-between">
           <span>Gross Profit:</span>

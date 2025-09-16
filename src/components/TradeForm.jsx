@@ -56,7 +56,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
       return assetType === "CFD" || assetType === "Paper CFD" ? "GBP" : "GBX";
     } else if (["NASDAQ", "NYSE"].includes(market)) {
       return "USD";
-    } else if (["ETR", "EPA", "XAMS", "WBAG"].includes(market)) {
+    } else if (["ETR", "EPA", "MIL", "XAMS", "WBAG"].includes(market)) {
       return "EUR";
     } else if (["SIX"].includes(market)) {
       return "CHF";
@@ -108,6 +108,7 @@ const TradeForm = ({ onAddTrade, onClose }) => {
                   <option value="NASDAQ">NASDAQ</option>
                   <option value="ETR">XETRA (ETR)</option>
                   <option value="EPA">Euronext Paris (EPA)</option>
+                  <option value="MIL">Borsa Italiana (MIL)</option>
                   <option value="XAMS">Euronext Amsterdam (XAMS)</option>
                   <option value="WBAG">Wiener Börse (WBAG)</option>
                   <option value="SIX">SIX Swiss Exchange (SIX)</option>

@@ -30,6 +30,7 @@ const tickerNames = {
     DGE: "Diageo plc",
     CMG: "Compass Group plc",
     CCH: "Coca-Cola HBC AG",
+    NXT: "Next Plc",
   },
   NYSE: {
     LNG: "Cheniere Energy Inc",
@@ -50,6 +51,8 @@ const tickerNames = {
     DKS: "Dick's Sporting Goods Inc",
     JPM: "JP Morgan & Chase",
     FIG: "Figma",
+    RSG: "Republic Services Inc",
+    VTRS: "Viatris Inc",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",
@@ -68,6 +71,12 @@ const tickerNames = {
   },
   EPA: {
     EL: "EssilorLuxottica",
+  },
+  MIL: {
+    ENI: "Eni SpA",
+    ISP: "Intesa Sanpaolo SpA",
+    LUX: "Luxottica Group SpA",
+    CPR: "Davide Campari-Milano SpA",
   },
   SIX: {
     SIKA: "Sika AG",

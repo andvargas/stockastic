@@ -56,11 +56,14 @@ const TradeDetails = () => {
     try {
       const snapshots = await fetchSnapshotsByTrade(trade._id);
       if (snapshots.length > 0) {
-        // Find the highest price among snapshots
-        const highest = Math.max(...snapshots.map((snap) => snap.price));
-        setHighestSnapshotPrice(highest);
+        // Find the highest price among snapshots for longs and lowest for shorts
+        const prices = snapshots.map((snap) => snap.price);
+        const highest = Math.max(...prices);
+        const lowest = Math.min(...prices);
+        const isShort = trade.type?.toLowerCase().includes("short");
+        setHighestSnapshotPrice(isShort ? lowest : highest);
 
-        // (Optional) Log the latest snapshot as before
+        // Log the latest snapshot to console for debugging
         const sorted = [...snapshots].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         const latest = sorted[0];
         setLatestPrice(latest.price);
@@ -170,7 +173,7 @@ const TradeDetails = () => {
       inputClass: "w-32",
       options: ["Open", "Closed", "Considering"],
     },
-    { key: "type", label: "Transaction Type", type: "select", inputClass: "w-32", options: ["Long", "Short", "PaperMoney Long", "PaperMoney Short"] },
+    { key: "type", label: "Position Type", type: "select", inputClass: "w-32", options: ["Long", "Short"] },
     { key: "assetType", label: "Asset Type", type: "select", inputClass: "w-32", options: ["Real Money", "Paper Money", "CFD", "Paper CFD"] },
     { key: "atr", label: "ATR", type: "number", inputClass: "w-24" },
     { key: "pnl", label: "P/L", type: "number", inputClass: "w-24" },
@@ -248,14 +251,14 @@ const TradeDetails = () => {
       return;
     }
 
-    const { entryPrice, atr, currency } = trade;
+    const { entryPrice, atr, currency, type } = trade;
     if (!entryPrice || !atr || !currency) {
       toast.error("Missing values for calculation.");
       return;
     }
 
     // ✅ Pass in currencyRates as the 4th parameter
-    const { stopLoss, takeProfit, quantity } = calculateTradeLevels(parseFloat(entryPrice), parseFloat(atr), currency, currencyRates);
+    const { stopLoss, takeProfit, quantity } = calculateTradeLevels(parseFloat(entryPrice), parseFloat(atr), currency, currencyRates, type);
 
     const confirmUpdate = window.confirm(
       `New values:\nStop Loss: ${stopLoss}\nTake Profit: ${takeProfit}\nQuantity: ${quantity}\n\nUpdate trade with these values?`

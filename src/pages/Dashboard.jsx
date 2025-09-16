@@ -438,9 +438,23 @@ const Dashboard = () => {
                       ) : trade.wnl === "Broke Even" ? (
                         trade.takeProfit
                       ) : (
-                        <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
-                          <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">BE</span> {(trade.entryPrice * 1.04).toFixed(2)}
-                        </Tooltip>
+                        (() => {
+                          // Check if it's a short position
+                          const isShort = trade.type?.toLowerCase().includes("short");
+                          const profitPercentage = 0.04; // 4%
+
+                          // Calculate breakeven price based on position type
+                          const breakevenPrice = isShort
+                            ? trade.entryPrice * (1 - profitPercentage) // SHORT: profit when price goes down
+                            : trade.entryPrice * (1 + profitPercentage); // LONG: profit when price goes up
+
+                          return (
+                            <Tooltip tooltipText={`Take Profit: ${trade.takeProfit}`}>
+                              <span className="text-xs bg-amber-500 text-yellow-50 rounded px-1">{isShort ? "BE" : "BE"}</span>{" "}
+                              {breakevenPrice.toFixed(2)}
+                            </Tooltip>
+                          );
+                        })()
                       )}
                     </td>
                     <td className="border-b p-2 hidden md:table-cell">
