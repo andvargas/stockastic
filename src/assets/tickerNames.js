@@ -56,6 +56,9 @@ const tickerNames = {
     RSG: "Republic Services Inc",
     VTRS: "Viatris Inc",
     BSX: "Boston Scientific Corporation",
+    MMM: "3M Company",
+    KO: "The Coca-Cola Company",
+    MTD: "Mettler-Toledo International Inc",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",

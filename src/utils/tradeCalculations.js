@@ -1,5 +1,5 @@
-const avgSL = 1.56;
-const avgTP = 3.54;
+const avgSL = 1.57;
+const avgTP = 3.14;
 const accRiskTrade = 100;
 
 export const calculateTradeLevels = (entryPrice, atr, currency, currencyRates, tradeType = "Long") => {
