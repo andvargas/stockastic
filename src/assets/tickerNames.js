@@ -59,6 +59,8 @@ const tickerNames = {
     MMM: "3M Company",
     KO: "The Coca-Cola Company",
     MTD: "Mettler-Toledo International Inc",
+    TT: "Trane Technologies plc",
+    MCD: "McDonald's Corporation",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",

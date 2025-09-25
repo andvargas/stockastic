@@ -335,6 +335,7 @@ const TradeDetails = () => {
                           className={`border rounded p-2 ${inputClass} w-full`}
                           value={tempValue}
                           onChange={(e) => setTempValue(e.target.value)}
+                          rows={7}
                         />
                         <div className="mt-1 flex gap-2 items-center">
                           <RoundIconButton onClick={handleSave} icon={Save} iconClassName="w-4 h-4" />
