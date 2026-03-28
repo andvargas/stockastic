@@ -61,6 +61,7 @@ const tickerNames = {
     MTD: "Mettler-Toledo International Inc",
     TT: "Trane Technologies plc",
     MCD: "McDonald's Corporation",
+    V: "Visa Inc",
   },
   NASDAQ: {
     CRVL: "CorVel Corp",

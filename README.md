@@ -1,6 +1,7 @@
 # 📊 Trading App (React + Node + Mongo)
 
 A simple trading journal web app to track, view, and update your trades.
+pnpm run dev
 
 ## ✨ Features
 
@@ -29,7 +30,7 @@ A simple trading journal web app to track, view, and update your trades.
 - **Backend:** Node.js v22, Express, Mongoose, bcrypt, jsonwebtoken
 - **Database:** MongoDB Atlas
 - **Deployment:** 
-  - Backend: AWS EC2, PM2, Nginx, Certbot SSL
+  - Backend: Render
   - Frontend: Netlify
 - **PWA:** Service Worker, manifest.json, install prompt handling
 
