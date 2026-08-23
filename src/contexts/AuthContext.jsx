@@ -14,15 +14,19 @@ export const AuthProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+    const handleExpired = () => {
+      setUser(null);
+      navigate("/login");
+    };
+    window.addEventListener("auth:expired", handleExpired);
+    return () => window.removeEventListener("auth:expired", handleExpired);
+  }, [navigate]);
 
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
-    const userData = { email: res.data.email, role: res.data.role, token: res.data.token };
-    setUser(res.data.user);
-    localStorage.setItem("user", JSON.stringify(res.data.user));
+    const userData = { ...res.data.user, token: res.data.token };
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const register = async (email, password) => {

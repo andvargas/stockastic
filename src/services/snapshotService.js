@@ -1,11 +1,9 @@
 // src/services/snapshotService.js
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import api from "./api";
 
 export const fetchSnapshotsByTrade = async (tradeId) => {
   try {
-    const res = await axios.get(`${API_URL}/trades/${tradeId}/snapshots`);
+    const res = await api.get(`/trades/${tradeId}/snapshots`);
     return res.data;
   } catch (err) {
     console.error("Error fetching snapshots:", err);

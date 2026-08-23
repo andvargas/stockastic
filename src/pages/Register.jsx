@@ -15,7 +15,7 @@ const Register = () => {
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email").required("Required"),
-    password: Yup.string().min(6, "Minimum 6 characters").required("Required"),
+    password: Yup.string().min(8, "Minimum 8 characters").required("Required"),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
